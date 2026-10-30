@@ -1,0 +1,1093 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0A5F8A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Hidrossanitária">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px);-webkit-text-size-adjust:100%}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+<title>Calculadora Hidráulica Sanitária</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,500..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: faixa de cabeçalho com abas de módulo; abaixo, coluna de entradas (campos destacados) à esquerda e painel de resultados à direita; empilha no celular. */
+:root{
+  --bg:#EDF1F4; --surface:#FFFFFF; --ink:#0F1C26; --muted:#4F606C; --line:#D3DCE2; --line-strong:#93A8B6;
+  --accent:#0A5F8A; --accent-ink:#FFFFFF; --accent-soft:#E1EEF5; --field:#F6FAFC;
+  --ok:#1B6E44; --ok-soft:#E2F1E8; --warn:#8F5400; --warn-soft:#FAEFDB; --bad:#AE2A20; --bad-soft:#FBE5E2;
+  --terrain:#86653A;
+  --f-display:'Archivo','Helvetica Neue',Arial,sans-serif;
+  --f-body:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --f-mono:'IBM Plex Mono',ui-monospace,'SFMono-Regular',Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0B1319; --surface:#121D25; --ink:#E5EDF2; --muted:#9CACB7; --line:#24343F; --line-strong:#466070;
+  --accent:#62B4DD; --accent-ink:#04202E; --accent-soft:#123041; --field:#0E1920;
+  --ok:#62C68F; --ok-soft:#113022; --warn:#E5AA4E; --warn-soft:#33250E; --bad:#F2857A; --bad-soft:#3A1714;
+  --terrain:#C9A574; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#0B1319; --surface:#121D25; --ink:#E5EDF2; --muted:#9CACB7; --line:#24343F; --line-strong:#466070;
+  --accent:#62B4DD; --accent-ink:#04202E; --accent-soft:#123041; --field:#0E1920;
+  --ok:#62C68F; --ok-soft:#113022; --warn:#E5AA4E; --warn-soft:#33250E; --bad:#F2857A; --bad-soft:#3A1714;
+  --terrain:#C9A574; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
+.wrap{max-width:1240px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+header.top{background:var(--surface);border-bottom:1px solid var(--line)}
+header.top .wrap{padding-block:26px 0;display:flex;flex-direction:column;gap:18px}
+.eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:600}
+h1{margin:0;font-family:var(--f-display);font-stretch:112%;font-weight:750;font-size:clamp(26px,4vw,38px);line-height:1.08;letter-spacing:-.01em;text-wrap:balance}
+.sub{margin:6px 0 0;color:var(--muted);max-width:68ch}
+.tabs-scroll{overflow-x:auto;margin:0 -4px}
+.tabs{display:flex;gap:4px;padding:0 4px;min-width:max-content}
+.tab{appearance:none;border:0;background:none;color:var(--muted);font:600 14.5px var(--f-body);padding:12px 16px 14px;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
+.tab:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;border-radius:4px}
+
+main .wrap{padding-block:26px 48px}
+.grid{display:grid;grid-template-columns:minmax(0,400px) minmax(0,1fr);gap:24px;align-items:start}
+@media (max-width:880px){.grid{grid-template-columns:minmax(0,1fr)}}
+
+.inputs{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:22px;display:flex;flex-direction:column;gap:22px}
+.group{display:flex;flex-direction:column;gap:14px}
+.group h3{margin:0;font:700 12px var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding-bottom:8px;border-bottom:1px solid var(--line)}
+.row2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field label{font-weight:600;font-size:14px}
+.field small{color:var(--muted);font-size:12.5px;line-height:1.35}
+.ctl{display:flex;align-items:stretch;background:var(--field);border:1.5px solid var(--line-strong);border-radius:8px;overflow:hidden;transition:border-color .15s,box-shadow .15s}
+.ctl:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.ctl.err{border-color:var(--bad);box-shadow:0 0 0 3px var(--bad-soft)}
+.ctl input,.ctl select{flex:1;min-width:0;border:0;background:transparent;color:var(--ink);font:500 17px var(--f-mono);padding:11px 12px;outline:none;font-variant-numeric:tabular-nums}
+.ctl select{font:500 15px var(--f-body);cursor:pointer}
+.u{display:flex;align-items:center;padding:0 12px;background:var(--accent-soft);color:var(--accent);font:600 12.5px var(--f-mono);white-space:nowrap;border-left:1px solid var(--line)}
+.seg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border:1.5px solid var(--line-strong);border-radius:8px;overflow:hidden}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg label{text-align:center;padding:10px 8px;font-weight:600;font-size:14px;cursor:pointer;color:var(--muted);background:var(--field)}
+.seg input:checked + label{background:var(--accent);color:var(--accent-ink)}
+.seg input:focus-visible + label{outline:2px solid var(--accent);outline-offset:-3px}
+.src-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.src-row label{font-size:12.5px;font-weight:600;color:var(--muted)}
+.src-row select{flex:1;min-width:0;font:500 13px var(--f-body);color:var(--ink);background:var(--surface);border:1px solid var(--line-strong);border-radius:6px;padding:6px 8px;cursor:pointer}
+.src-row select:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.ctl.linked{background:var(--accent-soft);border-style:dashed;border-color:var(--accent)}
+.ctl.linked input{cursor:default;color:var(--accent);font-weight:600}
+.badge{display:flex;align-items:center;padding:0 10px;font:700 10.5px var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--accent);white-space:nowrap}
+.ctl:not(.linked) .badge{display:none}
+
+.results{display:flex;flex-direction:column;gap:18px;min-width:0}
+.banner{display:flex;align-items:center;gap:12px;padding:14px 18px;border-radius:10px;font-weight:600;font-size:15.5px}
+.banner.ok{background:var(--ok-soft);color:var(--ok)}
+.banner.warn{background:var(--warn-soft);color:var(--warn)}
+.banner.bad{background:var(--bad-soft);color:var(--bad)}
+.banner .dot{width:10px;height:10px;border-radius:50%;background:currentColor;flex:none}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.tile.key{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.tile.key .t-l{color:var(--accent-ink);opacity:.85}
+.t-l{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.t-v{font:600 30px/1.1 var(--f-mono);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.t-v small{font:500 13px var(--f-mono);margin-left:6px;opacity:.8}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px 20px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.card h4{margin:0;font:700 12px var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.section-t{margin:6px 0 -6px;font-family:var(--f-display);font-stretch:108%;font-weight:700;font-size:19px}
+.checks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.chk{display:flex;gap:14px;align-items:flex-start;padding:11px 0;border-top:1px solid var(--line)}
+.chk:first-child{border-top:0;padding-top:2px}
+.chk div{display:flex;flex-direction:column;min-width:0}
+.chk b{font-weight:600}
+.chk span.d{color:var(--muted);font-size:13.5px;font-family:var(--f-mono)}
+.pill{flex:none;width:96px;text-align:center;font:700 11px var(--f-body);letter-spacing:.06em;text-transform:uppercase;padding:5px 0;border-radius:999px}
+.ok .pill,.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.warn .pill,.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.bad .pill,.pill.bad{background:var(--bad-soft);color:var(--bad)}
+.memo{font:14px/1.7 var(--f-mono);display:flex;flex-direction:column;gap:2px;overflow-x:auto}
+.memo div{white-space:nowrap}
+.memo b{color:var(--accent);font-weight:600}
+.tbl-wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th{font:600 11.5px var(--f-body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:right;padding:8px 10px;border-bottom:1.5px solid var(--line-strong);white-space:nowrap}
+td{font:14px var(--f-mono);text-align:right;padding:9px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+tr.sel td{background:var(--accent-soft);font-weight:600}
+td .pill{width:auto;padding:3px 9px;display:inline-block}
+.note{color:var(--muted);font-size:13px;margin:0}
+.actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.btn{appearance:none;border:1.5px solid var(--accent);background:var(--surface);color:var(--accent);font:600 14px var(--f-body);border-radius:8px;padding:9px 16px;cursor:pointer;min-height:42px}
+.btn.solid{background:var(--accent);color:var(--accent-ink)}
+.btn:hover{filter:brightness(1.06)}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.toast{font-size:13px;color:var(--ok);font-weight:600}
+textarea.copybox{width:100%;min-height:160px;font:13px var(--f-mono);background:var(--field);color:var(--ink);border:1px solid var(--line-strong);border-radius:8px;padding:10px}
+
+/* planilha da rede */
+.sheet td{padding:4px}
+.sheet input{width:100%;min-width:64px;border:1.5px solid var(--line-strong);background:var(--field);color:var(--ink);border-radius:6px;font:500 15px var(--f-mono);padding:8px;text-align:right}
+.sheet input.name{text-align:left;min-width:56px}
+.sheet input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.sheet input.bad{border-color:var(--bad)}
+.x{appearance:none;border:0;background:none;color:var(--muted);font-size:20px;line-height:1;width:36px;height:36px;border-radius:6px;cursor:pointer}
+.x:hover{background:var(--bad-soft);color:var(--bad)}
+.x:focus-visible{outline:2px solid var(--accent)}
+.wide{grid-column:1/-1}
+
+svg.prof{width:100%;height:auto;display:block}
+svg .gl{stroke:var(--line);stroke-width:1}
+svg .tx{fill:var(--muted);font:11px var(--f-mono)}
+svg .ln-terr{stroke:var(--terrain);stroke-width:2;fill:none}
+svg .ar-terr{fill:var(--terrain);opacity:.12}
+svg .ln-piez{stroke:var(--accent);stroke-width:2.5;fill:none}
+svg .ln-est{stroke:var(--muted);stroke-width:1.5;stroke-dasharray:6 5;fill:none}
+svg .nd{fill:var(--surface);stroke:var(--accent);stroke-width:2}
+svg .sec-soil{fill:var(--terrain);opacity:.13}
+svg .sec-terr{stroke:var(--terrain);stroke-width:2.5}
+svg .sec-void{fill:var(--surface)}
+svg .sec-wall{fill:none;stroke:var(--ink);stroke-width:3}
+svg .sec-water{fill:var(--accent);opacity:.16}
+svg .sec-na{stroke:var(--accent);stroke-width:2}
+svg .sec-na.min{stroke-dasharray:7 5}
+svg .sec-ref{stroke:var(--muted);stroke-width:1.2;stroke-dasharray:2 4}
+svg .sec-pipe{fill:none;stroke:var(--accent);stroke-width:7;stroke-linecap:round;stroke-linejoin:round}
+svg .sec-pump{fill:var(--accent);stroke:var(--ink);stroke-width:1.5}
+svg .sec-in{fill:var(--line-strong);stroke:var(--ink);stroke-width:1}
+svg .sec-lbl{fill:var(--ink);font:600 13px var(--f-mono)}
+svg .sec-lbl tspan.k{fill:var(--muted);font-weight:500}
+svg .sec-guide{fill:none;stroke:var(--line-strong);stroke-width:1}
+.legend{display:flex;flex-wrap:wrap;gap:16px;font-size:13px;color:var(--muted)}
+.legend i{display:inline-block;width:20px;height:0;border-top:3px solid;vertical-align:middle;margin-right:6px}
+
+footer{color:var(--muted);font-size:13px;padding-block:0 32px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (max-width:480px){.inputs{padding:16px}.t-v{font-size:26px}.pill{width:84px}}
+</style>
+
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div>
+      <div class="eyebrow">Água e esgoto · NBR 9649 · NBR 12208 · NBR 12214 · NBR 12215 · NBR 12218</div>
+      <h1>Calculadora Hidráulica Sanitária</h1>
+      <p class="sub">Vazões de projeto, rede coletora por Manning, linha de recalque, adutora por gravidade, rede de distribuição por Hazen-Williams, estação elevatória e capacidade de linhas existentes. Os resultados se atualizam enquanto você digita.</p>
+    </div>
+    <div class="tabs-scroll">
+      <nav class="tabs" role="tablist" aria-label="Módulos de cálculo">
+        <button class="tab" role="tab" data-tab="vaz" aria-selected="true">Vazões de projeto</button>
+        <button class="tab" role="tab" data-tab="col" aria-selected="false">Rede coletora</button>
+        <button class="tab" role="tab" data-tab="rec" aria-selected="false">Linha de recalque</button>
+        <button class="tab" role="tab" data-tab="adu" aria-selected="false">Adutora por gravidade</button>
+        <button class="tab" role="tab" data-tab="dis" aria-selected="false">Rede de distribuição</button>
+        <button class="tab" role="tab" data-tab="ele" aria-selected="false">Elevatória</button>
+        <button class="tab" role="tab" data-tab="cap" aria-selected="false">Capacidade da linha</button>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<main>
+<div class="wrap">
+
+<!-- ============ VAZÕES ============ -->
+<section id="p_vaz" class="panel" role="tabpanel">
+  <div class="grid">
+    <form class="inputs" onsubmit="return false">
+      <div class="group">
+        <h3>População atendida</h3>
+        <div class="seg" role="radiogroup" aria-label="Forma de entrada">
+          <input type="radio" name="v_modo" id="v_m1" value="pop" checked><label for="v_m1">População</label>
+          <input type="radio" name="v_modo" id="v_m2" value="econ"><label for="v_m2">Economias</label>
+        </div>
+        <div class="field" id="v_wrap_pop">
+          <label for="v_pop">População de projeto</label>
+          <div class="ctl"><input id="v_pop" inputmode="decimal" value="10000"><span class="u">hab</span></div>
+        </div>
+        <div class="row2" id="v_wrap_econ" hidden>
+          <div class="field"><label for="v_econ">Economias</label>
+            <div class="ctl"><input id="v_econ" inputmode="decimal" value="3000"><span class="u">un</span></div></div>
+          <div class="field"><label for="v_hab">Habitantes/econ.</label>
+            <div class="ctl"><input id="v_hab" inputmode="decimal" value="3,3"><span class="u">hab</span></div></div>
+        </div>
+      </div>
+      <div class="group">
+        <h3>Consumo e coeficientes</h3>
+        <div class="field"><label for="v_q">Consumo per capita (q)</label>
+          <div class="ctl"><input id="v_q" inputmode="decimal" value="150"><span class="u">L/hab·dia</span></div></div>
+        <div class="row2">
+          <div class="field"><label for="v_k1">K₁ (dia)</label><div class="ctl"><input id="v_k1" inputmode="decimal" value="1,2"></div></div>
+          <div class="field"><label for="v_k2">K₂ (hora)</label><div class="ctl"><input id="v_k2" inputmode="decimal" value="1,5"></div></div>
+          <div class="field"><label for="v_k3">K₃ (mínima)</label><div class="ctl"><input id="v_k3" inputmode="decimal" value="0,5"></div></div>
+          <div class="field"><label for="v_c">C (retorno)</label><div class="ctl"><input id="v_c" inputmode="decimal" value="0,8"></div></div>
+        </div>
+      </div>
+      <div class="group">
+        <h3>Infiltração na rede coletora</h3>
+        <div class="row2">
+          <div class="field"><label for="v_ext">Extensão da rede</label>
+            <div class="ctl"><input id="v_ext" inputmode="decimal" value="12"><span class="u">km</span></div></div>
+          <div class="field"><label for="v_ti">Taxa (Tᵢ)</label>
+            <div class="ctl"><input id="v_ti" inputmode="decimal" value="0,1"><span class="u">L/s·km</span></div></div>
+        </div>
+        <small class="note">NBR 9649: Tᵢ entre 0,05 e 1,0 L/s·km, conforme nível do lençol e material.</small>
+      </div>
+    </form>
+    <div class="results" id="out_vaz"></div>
+  </div>
+</section>
+
+<!-- ============ COLETORA ============ -->
+<section id="p_col" class="panel" role="tabpanel" hidden>
+  <div class="grid">
+    <form class="inputs" onsubmit="return false">
+      <div class="group">
+        <h3>Vazões do trecho</h3>
+        <div class="field"><label for="c_qi">Vazão inicial (Qᵢ)</label>
+          <div class="ctl"><input id="c_qi" inputmode="decimal" value="2,0"><span class="badge">automático</span><span class="u">L/s</span></div>
+          <div class="src-row"><label for="c_qi_src">Origem</label><select id="c_qi_src" class="src" data-target="c_qi" data-default="esg_min"></select></div></div>
+        <div class="field"><label for="c_qf">Vazão final (Q<sub>f</sub>)</label>
+          <div class="ctl"><input id="c_qf" inputmode="decimal" value="6,5"><span class="badge">automático</span><span class="u">L/s</span></div>
+          <div class="src-row"><label for="c_qf_src">Origem</label><select id="c_qf_src" class="src" data-target="c_qf" data-default="esg_max"></select></div></div>
+        <small class="note">Valores abaixo de 1,5 L/s são calculados como 1,5 L/s (NBR 9649).</small>
+      </div>
+      <div class="group">
+        <h3>Trecho</h3>
+        <div class="field"><label for="c_s">Declividade do coletor (I)</label>
+          <div class="ctl"><input id="c_s" inputmode="decimal" value="0,0060"><span class="u">m/m</span></div></div>
+        <div class="row2">
+          <div class="field"><label for="c_n">Manning (n)</label><div class="ctl"><input id="c_n" inputmode="decimal" value="0,013"></div></div>
+          <div class="field"><label for="c_dnmin">DN mínimo</label><div class="ctl"><select id="c_dnmin"><option value="100">100 mm</option><option value="150">150 mm</option></select></div></div>
+        </div>
+        <div class="field"><label for="c_dn">Diâmetro adotado</label><div class="ctl"><select id="c_dn"></select></div></div>
+      </div>
+    </form>
+    <div class="results" id="out_col"></div>
+  </div>
+</section>
+
+<!-- ============ RECALQUE ============ -->
+<section id="p_rec" class="panel" role="tabpanel" hidden>
+  <div class="grid">
+    <form class="inputs" onsubmit="return false">
+      <div class="group">
+        <h3>Vazão e operação</h3>
+        <div class="field"><label for="r_q">Vazão de recalque</label>
+          <div class="ctl"><input id="r_q" inputmode="decimal" value="15"><span class="badge">automático</span><span class="u">L/s</span></div>
+          <div class="src-row"><label for="r_q_src">Origem</label><select id="r_q_src" class="src" data-target="r_q" data-default="agua_dia"></select></div></div>
+        <div class="row2">
+          <div class="field"><label for="r_h">Funcionamento</label><div class="ctl"><input id="r_h" inputmode="decimal" value="24"><span class="u">h/dia</span></div></div>
+          <div class="field"><label for="r_kb">K de Bresse</label><div class="ctl"><input id="r_kb" inputmode="decimal" value="1,2"></div></div>
+        </div>
+        <small class="note">24 h/dia usa Bresse (D = K·√Q). Menos de 24 h usa Forchheimer (D = 1,3·X<sup>¼</sup>·√Q).</small>
+      </div>
+      <div class="group">
+        <h3>Tubulação e desnível</h3>
+        <div class="field"><label for="r_mat">Material</label><div class="ctl"><select id="r_mat" class="mat"></select></div></div>
+        <div class="row2">
+          <div class="field"><label for="r_l">Comprimento</label><div class="ctl"><input id="r_l" inputmode="decimal" value="850"><span class="u">m</span></div></div>
+          <div class="field"><label for="r_hg">Desnível geom.</label><div class="ctl"><input id="r_hg" inputmode="decimal" value="32"><span class="u">m</span></div></div>
+          <div class="field"><label for="r_k">ΣK localizadas</label><div class="ctl"><input id="r_k" inputmode="decimal" value="12"></div></div>
+          <div class="field"><label for="r_eta">Rend. conjunto</label><div class="ctl"><input id="r_eta" inputmode="decimal" value="65"><span class="u">%</span></div></div>
+        </div>
+        <div class="field"><label for="r_dn">Diâmetro adotado</label><div class="ctl"><select id="r_dn"></select></div></div>
+      </div>
+    </form>
+    <div class="results" id="out_rec"></div>
+  </div>
+</section>
+
+<!-- ============ ADUTORA ============ -->
+<section id="p_adu" class="panel" role="tabpanel" hidden>
+  <div class="grid">
+    <form class="inputs" onsubmit="return false">
+      <div class="group">
+        <h3>Vazão</h3>
+        <div class="field"><label for="a_q">Vazão de adução</label>
+          <div class="ctl"><input id="a_q" inputmode="decimal" value="20"><span class="badge">automático</span><span class="u">L/s</span></div>
+          <div class="src-row"><label for="a_q_src">Origem</label><select id="a_q_src" class="src" data-target="a_q" data-default="agua_dia"></select></div></div>
+      </div>
+      <div class="group">
+        <h3>Cotas e traçado</h3>
+        <div class="row2">
+          <div class="field"><label for="a_cm">NA de montante</label><div class="ctl"><input id="a_cm" inputmode="decimal" value="245"><span class="u">m</span></div></div>
+          <div class="field"><label for="a_cj">Cota de chegada</label><div class="ctl"><input id="a_cj" inputmode="decimal" value="212"><span class="u">m</span></div></div>
+          <div class="field"><label for="a_l">Comprimento</label><div class="ctl"><input id="a_l" inputmode="decimal" value="3200"><span class="u">m</span></div></div>
+          <div class="field"><label for="a_p">Pressão residual</label><div class="ctl"><input id="a_p" inputmode="decimal" value="0"><span class="u">mca</span></div></div>
+        </div>
+        <small class="note">Pressão residual: carga que deve sobrar na chegada. Use 0 quando a adutora chega livre em reservatório.</small>
+        <div class="field"><label for="a_mat">Material</label><div class="ctl"><select id="a_mat" class="mat"></select></div></div>
+        <div class="field"><label for="a_dn">Diâmetro adotado</label><div class="ctl"><select id="a_dn"></select></div></div>
+      </div>
+    </form>
+    <div class="results" id="out_adu"></div>
+  </div>
+</section>
+
+<!-- ============ DISTRIBUIÇÃO ============ -->
+<section id="p_dis" class="panel" role="tabpanel" hidden>
+  <div class="grid">
+    <form class="inputs" onsubmit="return false">
+      <div class="group">
+        <h3>Reservatório</h3>
+        <div class="row2">
+          <div class="field"><label for="d_namin">NA mínimo</label><div class="ctl"><input id="d_namin" inputmode="decimal" value="118"><span class="u">m</span></div></div>
+          <div class="field"><label for="d_namax">NA máximo</label><div class="ctl"><input id="d_namax" inputmode="decimal" value="122"><span class="u">m</span></div></div>
+        </div>
+        <div class="field"><label for="d_ct0">Cota do terreno no reservatório</label><div class="ctl"><input id="d_ct0" inputmode="decimal" value="100"><span class="u">m</span></div></div>
+        <div class="field"><label for="d_mat">Material</label><div class="ctl"><select id="d_mat" class="mat"></select></div></div>
+        <small class="note">Pressão dinâmica calculada com o NA mínimo; pressão estática com o NA máximo.</small>
+      </div>
+    </form>
+    <div class="results">
+      <div class="card">
+        <h4>Trechos em série, a partir do reservatório</h4>
+        <div class="tbl-wrap">
+          <table class="sheet">
+            <thead><tr><th>Trecho</th><th>L (m)</th><th>Q (L/s)</th><th>DN (mm)</th><th>Cota terreno final (m)</th><th></th></tr></thead>
+            <tbody id="d_rows"></tbody>
+          </table>
+        </div>
+        <div class="actions"><button type="button" class="btn" id="d_add">Adicionar trecho</button></div>
+      </div>
+      <div id="out_dis" class="results"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ELEVATÓRIA ============ -->
+<section id="p_ele" class="panel" role="tabpanel" hidden>
+  <div class="grid">
+    <form class="inputs" onsubmit="return false">
+      <div class="group">
+        <h3>Configuração</h3>
+        <div class="field"><label>Fluido</label>
+          <div class="seg" role="radiogroup" aria-label="Fluido bombeado">
+            <input type="radio" name="e_fluido" id="e_f1" value="agua"><label for="e_f1">Água</label>
+            <input type="radio" name="e_fluido" id="e_f2" value="esg" checked><label for="e_f2">Esgoto</label>
+          </div></div>
+        <div class="field"><label>Tipo de bomba</label>
+          <div class="seg" role="radiogroup" aria-label="Tipo de bomba">
+            <input type="radio" name="e_tipo" id="e_t1" value="sub" checked><label for="e_t1">Submersível</label>
+            <input type="radio" name="e_tipo" id="e_t2" value="cent"><label for="e_t2">Centrífuga</label>
+          </div></div>
+        <div class="field"><label>Arranjo</label>
+          <div class="seg" role="radiogroup" aria-label="Arranjo da elevatória">
+            <input type="radio" name="e_arr" id="e_a1" value="poco" checked><label for="e_a1">Com poço</label>
+            <input type="radio" name="e_arr" id="e_a2" value="sem"><label for="e_a2">Sem poço</label>
+          </div>
+          <small>Sem poço: a bomba aspira direto de reservatório, manancial ou caixa existente, sem volume de regularização.</small></div>
+      </div>
+
+      <div class="group">
+        <h3>Vazões</h3>
+        <div class="field"><label for="e_q">Vazão de projeto</label>
+          <div class="ctl"><input id="e_q" inputmode="decimal" value="6,5"><span class="badge">automático</span><span class="u">L/s</span></div>
+          <div class="src-row"><label for="e_q_src">Origem</label><select id="e_q_src" class="src" data-target="e_q" data-default="esg_max"></select></div></div>
+        <div class="field" id="e_wrap_qm"><label for="e_qm">Vazão média afluente</label>
+          <div class="ctl"><input id="e_qm" inputmode="decimal" value="3,0"><span class="badge">automático</span><span class="u">L/s</span></div>
+          <div class="src-row"><label for="e_qm_src">Origem</label><select id="e_qm_src" class="src" data-target="e_qm" data-default="esg_med"></select></div>
+          <small>Usada no tempo de detenção e na estimativa de horas de funcionamento.</small></div>
+        <div class="field" id="e_wrap_h" hidden><label for="e_h">Funcionamento das bombas</label>
+          <div class="ctl"><input id="e_h" inputmode="decimal" value="20"><span class="u">h/dia</span></div>
+          <small>Vazão bombeada = vazão de projeto × 24 / horas de funcionamento.</small></div>
+        <div class="row2">
+          <div class="field"><label for="e_nop">Bombas em operação</label><div class="ctl"><input id="e_nop" inputmode="numeric" value="1"><span class="u">un</span></div></div>
+          <div class="field"><label for="e_nres">Bombas reserva</label><div class="ctl"><input id="e_nres" inputmode="numeric" value="1"><span class="u">un</span></div></div>
+        </div>
+      </div>
+
+      <div class="group">
+        <h3>Recalque</h3>
+        <div class="field"><label for="e_hf_src">Perdas na linha de recalque</label>
+          <div class="ctl"><select id="e_hf_src"><option value="aba">Calcular com a aba Linha de recalque</option><option value="man">Digitar a perda de carga</option></select></div>
+          <small>Na primeira opção usam-se o DN, o material, o comprimento e o ΣK da aba Linha de recalque, com a vazão desta elevatória.</small></div>
+        <div class="field" id="e_wrap_hfm" hidden><label for="e_hfm">Perda de carga no recalque</label>
+          <div class="ctl"><input id="e_hfm" inputmode="decimal" value="8"><span class="u">m</span></div></div>
+        <div class="field"><label for="e_cd">Cota do ponto de descarga</label>
+          <div class="ctl"><input id="e_cd" inputmode="decimal" value="128"><span class="u">m</span></div>
+          <small>Desnível geométrico = cota de descarga − NA mínimo de sucção.</small></div>
+      </div>
+
+      <div class="group" id="e_wrap_poco">
+        <h3>Poço de sucção</h3>
+        <div class="row2">
+          <div class="field"><label for="e_ct">Cota do terreno</label><div class="ctl"><input id="e_ct" inputmode="decimal" value="100"><span class="u">m</span></div></div>
+          <div class="field"><label for="e_cc">Chegada (GI)</label><div class="ctl"><input id="e_cc" inputmode="decimal" value="97"><span class="u">m</span></div></div>
+        </div>
+        <small class="note">Chegada: geratriz inferior da tubulação afluente ao poço.</small>
+        <div class="seg" role="radiogroup" aria-label="Forma do poço">
+          <input type="radio" name="e_forma" id="e_fm1" value="circ" checked><label for="e_fm1">Circular</label>
+          <input type="radio" name="e_forma" id="e_fm2" value="ret"><label for="e_fm2">Retangular</label>
+        </div>
+        <div class="field" id="e_wrap_circ"><label for="e_dp">Diâmetro interno</label><div class="ctl"><input id="e_dp" inputmode="decimal" value="2,5"><span class="u">m</span></div></div>
+        <div class="row2" id="e_wrap_ret" hidden>
+          <div class="field"><label for="e_lp">Comprimento</label><div class="ctl"><input id="e_lp" inputmode="decimal" value="3,0"><span class="u">m</span></div></div>
+          <div class="field"><label for="e_bp">Largura</label><div class="ctl"><input id="e_bp" inputmode="decimal" value="2,0"><span class="u">m</span></div></div>
+        </div>
+        <div class="field"><label for="e_tc">Tempo de ciclo mínimo</label><div class="ctl"><input id="e_tc" inputmode="decimal" value="15"><span class="u">min</span></div>
+          <small>Intervalo entre duas partidas da mesma bomba. 10 min equivale a 6 partidas por hora.</small></div>
+      </div>
+
+      <div class="group" id="e_wrap_fonte" hidden>
+        <h3>Ponto de sucção</h3>
+        <div class="row2">
+          <div class="field"><label for="e_nas">NA mínimo da fonte</label><div class="ctl"><input id="e_nas" inputmode="decimal" value="100"><span class="u">m</span></div></div>
+          <div class="field"><label for="e_fs">Cota do fundo</label><div class="ctl"><input id="e_fs" inputmode="decimal" value="98"><span class="u">m</span></div></div>
+        </div>
+      </div>
+
+      <div class="group">
+        <h3>Bomba</h3>
+        <div class="field"><label for="e_ds">Diâmetro de sucção</label><div class="ctl"><select id="e_ds"></select></div>
+          <small>Na submersível, use o diâmetro da boca de sucção da bomba.</small></div>
+        <div id="e_wrap_cent" hidden class="group">
+          <div class="field"><label for="e_hs">Altura de sucção</label><div class="ctl"><input id="e_hs" inputmode="decimal" value="-0,5"><span class="u">m</span></div>
+            <small>Eixo da bomba acima do NA mínimo. Valor negativo indica bomba afogada.</small></div>
+          <div class="row2">
+            <div class="field"><label for="e_ls">Compr. sucção</label><div class="ctl"><input id="e_ls" inputmode="decimal" value="6"><span class="u">m</span></div></div>
+            <div class="field"><label for="e_ks">ΣK sucção</label><div class="ctl"><input id="e_ks" inputmode="decimal" value="3"></div></div>
+            <div class="field"><label for="e_npshr">NPSH requerido</label><div class="ctl"><input id="e_npshr" inputmode="decimal" value="3,5"><span class="u">m</span></div></div>
+            <div class="field"><label for="e_alt">Altitude</label><div class="ctl"><input id="e_alt" inputmode="decimal" value="165"><span class="u">m</span></div></div>
+            <div class="field"><label for="e_temp">Temperatura</label><div class="ctl"><input id="e_temp" inputmode="decimal" value="28"><span class="u">°C</span></div></div>
+          </div>
+          <div class="field"><label for="e_mats">Material da sucção</label><div class="ctl"><select id="e_mats" class="mat"></select></div></div>
+          <small class="note">NPSH requerido: leia na curva do fabricante para a vazão por bomba.</small>
+        </div>
+        <div class="row2">
+          <div class="field"><label for="e_eb">Rend. bomba</label><div class="ctl"><input id="e_eb" inputmode="decimal" value="65"><span class="u">%</span></div></div>
+          <div class="field"><label for="e_em">Rend. motor</label><div class="ctl"><input id="e_em" inputmode="decimal" value="88"><span class="u">%</span></div></div>
+        </div>
+      </div>
+    </form>
+    <div class="results" id="out_ele"></div>
+  </div>
+</section>
+
+<!-- ============ CAPACIDADE DA LINHA ============ -->
+<section id="p_cap" class="panel" role="tabpanel" hidden>
+  <div class="grid">
+    <form class="inputs" onsubmit="return false">
+      <div class="group">
+        <h3>Linha de recalque existente</h3>
+        <div class="seg" role="radiogroup" aria-label="Fluido conduzido">
+          <input type="radio" name="k_fluido" id="k_f1" value="agua"><label for="k_f1">Água</label>
+          <input type="radio" name="k_fluido" id="k_f2" value="esg" checked><label for="k_f2">Esgoto</label>
+        </div>
+        <div class="field"><label for="k_dn">Diâmetro da linha</label><div class="ctl"><select id="k_dn"></select></div></div>
+        <div class="field"><label for="k_mat">Material</label><div class="ctl"><select id="k_mat" class="mat"></select></div></div>
+        <div class="row2">
+          <div class="field"><label for="k_l">Comprimento</label><div class="ctl"><input id="k_l" inputmode="decimal" value="850"><span class="u">m</span></div></div>
+          <div class="field"><label for="k_hg">Desnível geom.</label><div class="ctl"><input id="k_hg" inputmode="decimal" value="32"><span class="u">m</span></div></div>
+          <div class="field"><label for="k_k">ΣK localizadas</label><div class="ctl"><input id="k_k" inputmode="decimal" value="12"></div></div>
+          <div class="field"><label for="k_vmax">Velocidade máx.</label><div class="ctl"><input id="k_vmax" inputmode="decimal" value="2,0"><span class="u">m/s</span></div></div>
+        </div>
+        <small class="note">A NBR admite até 3,0 m/s no recalque. Para linha em uso contínuo, 1,5 a 2,0 m/s costuma ser o limite econômico.</small>
+      </div>
+      <div class="group">
+        <h3>Bomba existente</h3>
+        <div class="field"><label for="k_lim">Limite imposto pela bomba</label>
+          <div class="ctl"><select id="k_lim"><option value="none">Nenhum, só a velocidade</option><option value="hman">Altura manométrica disponível</option><option value="pot">Potência do motor instalado</option></select></div></div>
+        <div class="field" id="k_wrap_h" hidden><label for="k_hd">Altura manométrica disponível</label><div class="ctl"><input id="k_hd" inputmode="decimal" value="45"><span class="u">mca</span></div></div>
+        <div class="field" id="k_wrap_p" hidden><label for="k_pm">Potência do motor</label><div class="ctl"><input id="k_pm" inputmode="decimal" value="15"><span class="u">cv</span></div></div>
+        <div class="field"><label for="k_eta">Rend. do conjunto</label><div class="ctl"><input id="k_eta" inputmode="decimal" value="65"><span class="u">%</span></div></div>
+      </div>
+      <div class="group">
+        <h3>Parâmetros de população</h3>
+        <div class="row2">
+          <div class="field"><label for="k_q">Per capita (q)</label><div class="ctl"><input id="k_q" inputmode="decimal" value="150"><span class="u">L/hab·dia</span></div></div>
+          <div class="field"><label for="k_k1">K₁ (dia)</label><div class="ctl"><input id="k_k1" inputmode="decimal" value="1,2"></div></div>
+          <div class="field" id="k_fk2"><label for="k_k2">K₂ (hora)</label><div class="ctl"><input id="k_k2" inputmode="decimal" value="1,5"></div></div>
+          <div class="field" id="k_fc"><label for="k_c">C (retorno)</label><div class="ctl"><input id="k_c" inputmode="decimal" value="0,8"></div></div>
+          <div class="field" id="k_fti"><label for="k_ti">Infiltração Tᵢ</label><div class="ctl"><input id="k_ti" inputmode="decimal" value="0,1"><span class="u">L/s·km</span></div></div>
+          <div class="field" id="k_fext"><label for="k_ext">Rede contribuinte</label><div class="ctl"><input id="k_ext" inputmode="decimal" value="5"><span class="u">km</span></div></div>
+          <div class="field" id="k_fh" hidden><label for="k_h">Funcionamento</label><div class="ctl"><input id="k_h" inputmode="decimal" value="20"><span class="u">h/dia</span></div></div>
+          <div class="field"><label for="k_hab">Hab. por UH</label><div class="ctl"><input id="k_hab" inputmode="decimal" value="3,3"><span class="u">hab</span></div></div>
+        </div>
+        <div class="actions"><button type="button" class="btn" id="k_copy">Usar parâmetros da aba Vazões</button><span class="toast" id="k_toast" aria-live="polite"></span></div>
+      </div>
+    </form>
+    <div class="results" id="out_cap"></div>
+  </div>
+</section>
+
+</div>
+</main>
+<footer><div class="wrap">Diâmetros tomados como diâmetro interno igual ao DN. Confira o diâmetro interno real do tubo e da classe de pressão antes de fechar o projeto.<br>Desenvolvido por Eng. Civil e Sanitarista Raulmar Rodrigues de Freitas.</div></footer>
+
+<script>
+(function(){
+"use strict";
+const $=id=>document.getElementById(id);
+const DN_GRAV=[100,150,200,250,300,350,400,450,500,600,700,800,900,1000,1200];
+const DN_PRESS=[50,75,100,150,200,250,300,350,400,450,500,600,700,800,900,1000];
+const MOTORS=[0.25,0.33,0.5,0.75,1,1.5,2,3,4,5,6,7.5,10,12.5,15,20,25,30,40,50,60,75,100,125,150,175,200,250,300,350,400,450,500];
+const MATS=[["150","PVC / PEAD (C = 150)"],["140","Ferro fundido novo revestido (C = 140)"],["130","Ferro fundido dúctil (C = 130)"],["120","Aço soldado / concreto (C = 120)"],["100","Ferro fundido usado (C = 100)"]];
+const G=9.81;
+let flows={};
+let recPipe=null;
+
+/* ---------- utilidades ---------- */
+function parse(s){ s=String(s).trim().replace(/\s/g,''); if(s.indexOf(',')>=0){ s=s.replace(/\./g,'').replace(',','.'); } return parseFloat(s); }
+function num(id){ const el=$(id); const v=parse(el.value); const ok=isFinite(v); const c=el.closest('.ctl'); if(c) c.classList.toggle('err',!ok); return ok?v:NaN; }
+function fmt(x,d){ if(d===undefined) d=2; return isFinite(x)? x.toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d}) : '—'; }
+function tile(l,v,u,key){ return '<div class="tile'+(key?' key':'')+'"><span class="t-l">'+l+'</span><span class="t-v">'+v+(u?'<small>'+u+'</small>':'')+'</span></div>'; }
+const LBL={ok:'Atende',warn:'Atenção',bad:'Não atende'};
+function chk(st,l,d){ return '<li class="chk '+st+'"><span class="pill">'+LBL[st]+'</span><div><b>'+l+'</b><span class="d">'+d+'</span></div></li>'; }
+function banner(st,t){ return '<div class="banner '+st+'"><span class="dot"></span><span>'+t+'</span></div>'; }
+function errBox(t){ return banner('bad',t); }
+function copyBar(id){ return '<div class="actions"><button type="button" class="btn copy" data-src="'+id+'">Copiar resultados</button><span class="toast" aria-live="polite"></span></div>'; }
+function allOk(list){ return list.every(s=>s==='ok')?'ok':(list.some(s=>s==='bad')?'bad':'warn'); }
+
+/* Hazen-Williams (SI): J em m/m, Q em m³/s, D em m */
+const hwJ=(Q,C,D)=>10.643*Math.pow(Q,1.852)*Math.pow(C,-1.852)*Math.pow(D,-4.87);
+const hwD=(Q,C,J)=>Math.pow(10.643*Math.pow(Q,1.852)/(Math.pow(C,1.852)*J),1/4.87);
+
+/* Escoamento livre em seção circular (Manning) */
+function geo(D,h){ const th=2*Math.acos(1-2*h); const A=D*D/8*(th-Math.sin(th)); const P=D*th/2; return {A:A,R:A/P}; }
+function qOf(D,n,S,h){ const g=geo(D,h); return g.A*Math.pow(g.R,2/3)*Math.sqrt(S)/n; }
+function solveFree(D,n,S,Q){
+  if(qOf(D,n,S,0.938)<Q) return null;
+  let lo=1e-7,hi=0.938;
+  for(let i=0;i<90;i++){ const m=(lo+hi)/2; if(qOf(D,n,S,m)<Q) lo=m; else hi=m; }
+  const h=(lo+hi)/2, g=geo(D,h);
+  return {h:h,V:Q/g.A,vc:6*Math.sqrt(G*g.R),sigma:1e4*g.R*S,R:g.R};
+}
+
+/* ---------- selects ---------- */
+function fillDN(id,list){ const el=$(id); el.innerHTML='<option value="auto">Automático (sugerido)</option>'+list.map(d=>'<option value="'+d+'">DN '+d+' mm</option>').join(''); }
+fillDN('c_dn',DN_GRAV); fillDN('r_dn',DN_PRESS); fillDN('a_dn',DN_PRESS);
+['e_ds','k_dn'].forEach(id=>{ const el=$(id); el.innerHTML=DN_PRESS.map(d=>'<option value="'+d+'">DN '+d+' mm</option>').join(''); el.value='150'; });
+document.querySelectorAll('select.mat').forEach(s=>{ s.innerHTML=MATS.map(m=>'<option value="'+m[0]+'">'+m[1]+'</option>').join(''); });
+
+/* ---------- VAZÕES ---------- */
+function calcVazoes(){
+  const modo=document.querySelector('input[name=v_modo]:checked').value;
+  $('v_wrap_pop').hidden=modo!=='pop'; $('v_wrap_econ').hidden=modo!=='econ';
+  const P = modo==='pop' ? num('v_pop') : num('v_econ')*num('v_hab');
+  const q=num('v_q'),k1=num('v_k1'),k2=num('v_k2'),k3=num('v_k3'),c=num('v_c'),ext=num('v_ext'),ti=num('v_ti');
+  const out=$('out_vaz');
+  if(![P,q,k1,k2,k3,c,ext,ti].every(isFinite)||P<=0||q<=0){ flows={}; out.innerHTML=errBox('Preencha os campos destacados em vermelho com números válidos.'); return; }
+  const Qa=P*q/86400, Qd=k1*Qa, Qh=k1*k2*Qa, Vol=P*q/1000;
+  const Qde=c*Qa, Qinf=ti*ext, Qmin=k3*Qde+Qinf, Qmed=Qde+Qinf, Qmax=k1*k2*Qde+Qinf;
+  flows={agua_med:{v:Qa,label:'Q água média'},esg_med:{v:Qmed,label:'Q esgoto média'},agua_dia:{v:Qd,label:'Q água máx. diária'},agua_hora:{v:Qh,label:'Q água máx. horária'},esg_min:{v:Qmin,label:'Q esgoto mínima'},esg_max:{v:Qmax,label:'Q esgoto máxima'}};
+  out.innerHTML=
+    '<h2 class="section-t">Abastecimento de água</h2>'+
+    '<div class="tiles">'+tile('Média',fmt(Qa),'L/s')+tile('Máx. diária · K₁',fmt(Qd),'L/s',true)+tile('Máx. horária · K₁K₂',fmt(Qh),'L/s')+tile('Volume médio',fmt(Vol,0),'m³/dia')+'</div>'+
+    '<h2 class="section-t">Esgotamento sanitário</h2>'+
+    '<div class="tiles">'+tile('Mínima · K₃',fmt(Qmin),'L/s')+tile('Média',fmt(Qmed),'L/s')+tile('Máxima · K₁K₂',fmt(Qmax),'L/s',true)+tile('Infiltração',fmt(Qinf),'L/s')+'</div>'+
+    '<div class="card"><h4>Memória de cálculo</h4><div class="memo">'+
+      '<div>P = '+fmt(P,0)+' hab</div>'+
+      '<div>Q<sub>méd</sub> = P·q/86.400 = '+fmt(P,0)+' × '+fmt(q,0)+' / 86.400 = <b>'+fmt(Qa,3)+' L/s</b></div>'+
+      '<div>Q<sub>dia</sub> = K₁·Q<sub>méd</sub> = '+fmt(k1)+' × '+fmt(Qa,3)+' = <b>'+fmt(Qd,3)+' L/s</b></div>'+
+      '<div>Q<sub>hora</sub> = K₁·K₂·Q<sub>méd</sub> = '+fmt(k1)+' × '+fmt(k2)+' × '+fmt(Qa,3)+' = <b>'+fmt(Qh,3)+' L/s</b></div>'+
+      '<div>Q<sub>d,esg</sub> = C·Q<sub>méd</sub> = '+fmt(c)+' × '+fmt(Qa,3)+' = <b>'+fmt(Qde,3)+' L/s</b></div>'+
+      '<div>Q<sub>inf</sub> = Tᵢ·L = '+fmt(ti,3)+' × '+fmt(ext)+' = <b>'+fmt(Qinf,3)+' L/s</b></div>'+
+      '<div>Q<sub>mín</sub> = K₃·Q<sub>d,esg</sub> + Q<sub>inf</sub> = <b>'+fmt(Qmin,3)+' L/s</b></div>'+
+      '<div>Q<sub>máx</sub> = K₁·K₂·Q<sub>d,esg</sub> + Q<sub>inf</sub> = <b>'+fmt(Qmax,3)+' L/s</b></div>'+
+    '</div></div>'+copyBar('out_vaz');
+}
+
+/* ---------- COLETORA ---------- */
+function calcColetora(){
+  const qi=num('c_qi'),qf=num('c_qf'),S=num('c_s'),n=num('c_n'),dnmin=+$('c_dnmin').value,sel=$('c_dn').value;
+  const out=$('out_col');
+  if(![qi,qf,S,n].every(isFinite)||S<=0||n<=0||qi<=0||qf<=0){ out.innerHTML=errBox('Preencha os campos destacados com números positivos.'); return; }
+  const qiC=Math.max(qi,1.5), qfC=Math.max(qf,1.5);
+  const Qi=qiC/1000, Qf=qfC/1000;
+  const Imin=0.0055*Math.pow(qiC,-0.47);
+  const rows=DN_GRAV.filter(d=>d>=dnmin).map(d=>{
+    const D=d/1000, f=solveFree(D,n,S,Qf), i=solveFree(D,n,S,Qi);
+    const lim=f&&f.V>f.vc?0.50:0.75;
+    return {d:d,f:f,i:i,lim:lim,okLam:!!(f&&f.h<=lim),okSig:!!(i&&i.sigma>=1.0),okV:!!(f&&f.V<=5)};
+  });
+  let idx = sel==='auto' ? rows.findIndex(r=>r.okLam) : rows.findIndex(r=>r.d===+sel);
+  if(idx<0 && sel==='auto'){ out.innerHTML=errBox('Nenhum diâmetro até DN 1200 atende com essa declividade. Aumente a declividade.'); return; }
+  if(idx<0){ out.innerHTML=errBox('O diâmetro escolhido é menor que o DN mínimo. Escolha outro ou mude o DN mínimo.'); return; }
+  const r=rows[idx];
+  const sLam = r.okLam?'ok':'bad', sSig=r.okSig?'ok':'bad', sI=S>=Imin?'ok':'bad', sV=r.okV?'ok':'bad';
+  const st=allOk([sLam,sSig,sI,sV]);
+  const lamTxt = r.f ? 'y/D = '+fmt(r.f.h,3)+' (limite '+fmt(r.lim)+(r.lim===0.5?', pois V > V<sub>c</sub>':'')+')' : 'Seção plena insuficiente: o tubo entra em carga';
+  let html=banner(st, st==='ok'?'DN '+r.d+' mm atende à NBR 9649':(st==='bad'?'DN '+r.d+' mm não atende a todos os critérios':'Verifique os itens destacados'));
+  html+='<div class="tiles">'+tile('Diâmetro',r.d,'mm',true)+tile('Lâmina final',r.f?fmt(r.f.h*100,1):'—','% D')+tile('Velocidade final',r.f?fmt(r.f.V):'—','m/s')+tile('Tensão trativa',r.i?fmt(r.i.sigma):'—','Pa')+'</div>';
+  html+='<div class="card"><h4>Verificações · NBR 9649</h4><ul class="checks">'+
+    chk(sLam,'Lâmina máxima para Q<sub>f</sub> = '+fmt(qfC)+' L/s',lamTxt)+
+    chk(sSig,'Tensão trativa ≥ 1,0 Pa para Qᵢ = '+fmt(qiC)+' L/s', r.i?'σ = γ·R<sub>H</sub>·I = '+fmt(r.i.sigma)+' Pa':'—')+
+    chk(sI,'Declividade mínima','I = '+fmt(S,4)+' m/m · I<sub>mín</sub> = 0,0055·Qᵢ<sup>−0,47</sup> = '+fmt(Imin,4)+' m/m')+
+    chk(sV,'Velocidade final ≤ 5,0 m/s', r.f?'V = '+fmt(r.f.V)+' m/s · V<sub>c</sub> = 6·√(g·R<sub>H</sub>) = '+fmt(r.f.vc)+' m/s':'—')+
+  '</ul></div>';
+  const show=rows.slice(Math.max(0,idx-1),idx+4);
+  html+='<div class="card"><h4>Comparação de diâmetros</h4><div class="tbl-wrap"><table><thead><tr><th>DN</th><th>y/D final</th><th>V final (m/s)</th><th>V<sub>c</sub> (m/s)</th><th>σ inicial (Pa)</th><th>Situação</th></tr></thead><tbody>'+
+    show.map(x=>{ const ok=x.okLam&&x.okSig&&x.okV&&S>=Imin; return '<tr'+(x.d===r.d?' class="sel"':'')+'><td>'+x.d+'</td><td>'+(x.f?fmt(x.f.h,3):'em carga')+'</td><td>'+(x.f?fmt(x.f.V):'—')+'</td><td>'+(x.f?fmt(x.f.vc):'—')+'</td><td>'+(x.i?fmt(x.i.sigma):'—')+'</td><td><span class="pill '+(ok?'ok':'bad')+'">'+(ok?'Atende':'Não atende')+'</span></td></tr>'; }).join('')+
+  '</tbody></table></div><p class="note">Diâmetros maiores reduzem a lâmina, mas também reduzem a tensão trativa na vazão inicial.</p></div>';
+  out.innerHTML=html+copyBar('out_col');
+}
+
+/* ---------- RECALQUE ---------- */
+function motorFor(p){ const f=p<=2?0.5:p<=5?0.3:p<=10?0.2:p<=20?0.15:0.1; const need=p*(1+f); const m=MOTORS.find(x=>x>=need); return {f:f,need:need,m:m}; }
+function pipeCalc(Q,C,d,L,K,hg,eta){ const D=d/1000, A=Math.PI*D*D/4, V=Q/A, J=hwJ(Q,C,D), hfd=J*L, hfl=K*V*V/(2*G), H=hg+hfd+hfl, cv=1000*Q*H/(75*eta), kw=G*Q*H/eta; return {d:d,V:V,J:J,hfd:hfd,hfl:hfl,H:H,cv:cv,kw:kw}; }
+function calcRecalque(){
+  const q=num('r_q'),h=num('r_h'),kb=num('r_kb'),L=num('r_l'),hg=num('r_hg'),K=num('r_k'),etaP=num('r_eta'),C=+$('r_mat').value,sel=$('r_dn').value;
+  const out=$('out_rec');
+  recPipe=null;
+  if(![q,h,kb,L,hg,K,etaP].every(isFinite)||q<=0||h<=0||h>24||L<=0||etaP<=0||etaP>100){ out.innerHTML=errBox('Confira os campos destacados. Funcionamento deve estar entre 0 e 24 h e o rendimento entre 0 e 100%.'); return; }
+  const Q=q/1000, eta=etaP/100;
+  const bresse=h>=24;
+  const De = bresse ? kb*Math.sqrt(Q) : 1.3*Math.pow(h/24,0.25)*Math.sqrt(Q);
+  let idx;
+  if(sel==='auto'){ idx=0; let best=1e9; DN_PRESS.forEach((d,i)=>{ const diff=Math.abs(d-De*1000); if(diff<best){best=diff;idx=i;} }); }
+  else idx=DN_PRESS.indexOf(+sel);
+  const r=pipeCalc(Q,C,DN_PRESS[idx],L,K,hg,eta);
+  recPipe={d:r.d,C:C,L:L,K:K};
+  const mo=motorFor(r.cv);
+  const sV = r.V<0.6?'warn':(r.V>3.0?'bad':'ok');
+  const st=sV;
+  let html=banner(st, st==='ok'?'DN '+r.d+' mm dentro da faixa de velocidade':(st==='bad'?'Velocidade acima de 3,0 m/s: aumente o diâmetro':'Velocidade abaixo de 0,6 m/s: risco de deposição'));
+  html+='<div class="tiles">'+tile('Diâmetro',r.d,'mm',true)+tile('Velocidade',fmt(r.V),'m/s')+tile('Altura manométrica',fmt(r.H),'mca')+tile('Motor comercial',mo.m?fmt(mo.m,mo.m<1?2:(mo.m%1?1:0)):'> 500','cv')+'</div>';
+  html+='<div class="card"><h4>Memória de cálculo</h4><div class="memo">'+
+    (bresse?'<div>Bresse: D = K·√Q = '+fmt(kb)+' × √'+fmt(Q,4)+' = <b>'+fmt(De*1000,0)+' mm</b></div>'
+           :'<div>Forchheimer: D = 1,3·X<sup>¼</sup>·√Q, X = '+fmt(h,1)+'/24 → <b>'+fmt(De*1000,0)+' mm</b></div>')+
+    '<div>V = Q/A = '+fmt(Q,4)+' / '+fmt(Math.PI*Math.pow(r.d/1000,2)/4,5)+' = <b>'+fmt(r.V)+' m/s</b></div>'+
+    '<div>J = 10,643·Q<sup>1,852</sup>·C<sup>−1,852</sup>·D<sup>−4,87</sup> = <b>'+fmt(r.J*1000)+' m/km</b></div>'+
+    '<div>h<sub>f</sub> distribuída = J·L = '+fmt(r.J,5)+' × '+fmt(L,0)+' = <b>'+fmt(r.hfd)+' m</b></div>'+
+    '<div>h<sub>f</sub> localizada = ΣK·V²/2g = '+fmt(K,1)+' × '+fmt(r.V)+'² / 19,62 = <b>'+fmt(r.hfl)+' m</b></div>'+
+    '<div>H<sub>man</sub> = H<sub>g</sub> + h<sub>f</sub> = '+fmt(hg)+' + '+fmt(r.hfd)+' + '+fmt(r.hfl)+' = <b>'+fmt(r.H)+' mca</b></div>'+
+    '<div>P = γ·Q·H<sub>man</sub>/(75·η) = <b>'+fmt(r.cv)+' cv</b> ('+fmt(r.kw)+' kW)</div>'+
+    '<div>Folga de '+fmt(mo.f*100,0)+'% → '+fmt(mo.need)+' cv → motor comercial <b>'+(mo.m?fmt(mo.m,mo.m%1?2:0):'—')+' cv</b></div>'+
+  '</div></div>';
+  html+='<div class="card"><h4>Verificações</h4><ul class="checks">'+chk(sV,'Velocidade de recalque entre 0,6 e 3,0 m/s','V = '+fmt(r.V)+' m/s')+'</ul></div>';
+  const lo=Math.max(0,idx-2), hi=Math.min(DN_PRESS.length,idx+3);
+  html+='<div class="card"><h4>Comparação de diâmetros</h4><div class="tbl-wrap"><table><thead><tr><th>DN</th><th>V (m/s)</th><th>J (m/km)</th><th>h<sub>f</sub> total (m)</th><th>H<sub>man</sub> (mca)</th><th>Potência (cv)</th></tr></thead><tbody>'+
+    DN_PRESS.slice(lo,hi).map(d=>{ const x=pipeCalc(Q,C,d,L,K,hg,eta); return '<tr'+(d===r.d?' class="sel"':'')+'><td>'+d+'</td><td>'+fmt(x.V)+'</td><td>'+fmt(x.J*1000)+'</td><td>'+fmt(x.hfd+x.hfl)+'</td><td>'+fmt(x.H)+'</td><td>'+fmt(x.cv)+'</td></tr>'; }).join('')+
+  '</tbody></table></div><p class="note">Use a tabela para comparar custo de tubo × custo de energia antes de fixar o DN.</p></div>';
+  out.innerHTML=html+copyBar('out_rec');
+}
+
+/* ---------- ADUTORA ---------- */
+function calcAdutora(){
+  const q=num('a_q'),cm=num('a_cm'),cj=num('a_cj'),L=num('a_l'),p=num('a_p'),C=+$('a_mat').value,sel=$('a_dn').value;
+  const out=$('out_adu');
+  if(![q,cm,cj,L,p].every(isFinite)||q<=0||L<=0){ out.innerHTML=errBox('Preencha os campos destacados com números válidos.'); return; }
+  const dH=cm-cj-p;
+  if(dH<=0){ out.innerHTML=errBox('Não há carga disponível: o NA de montante precisa ficar acima da cota de chegada somada à pressão residual.'); return; }
+  const Q=q/1000, Jd=dH/L, Dt=hwD(Q,C,Jd);
+  let idx = sel==='auto' ? DN_PRESS.findIndex(d=>d>=Dt*1000) : DN_PRESS.indexOf(+sel);
+  if(idx<0){ out.innerHTML=errBox('O diâmetro teórico passa de DN 1000. Revise a vazão ou as cotas.'); return; }
+  const calc=d=>{ const D=d/1000, V=Q/(Math.PI*D*D/4), J=hwJ(Q,C,D), hf=J*L; return {d:d,V:V,J:J,hf:hf,sobra:dH-hf,pc:cm-hf-cj}; };
+  const r=calc(DN_PRESS[idx]);
+  const sH=r.sobra>=0?'ok':'bad', sV=r.V<0.6?'warn':(r.V>3?'bad':'ok');
+  const st=allOk([sH,sV]);
+  let html=banner(st, st==='ok'?'DN '+r.d+' mm conduz a vazão com a carga disponível':(sH==='bad'?'Perda de carga maior que a carga disponível: aumente o diâmetro':'Verifique a velocidade'));
+  html+='<div class="tiles">'+tile('Diâmetro',r.d,'mm',true)+tile('Velocidade',fmt(r.V),'m/s')+tile('Perda de carga',fmt(r.hf),'m')+tile('Pressão na chegada',fmt(r.pc),'mca')+'</div>';
+  html+='<div class="card"><h4>Memória de cálculo</h4><div class="memo">'+
+    '<div>Carga disponível ΔH = '+fmt(cm)+' − '+fmt(cj)+' − '+fmt(p)+' = <b>'+fmt(dH)+' m</b></div>'+
+    '<div>J disponível = ΔH/L = '+fmt(dH)+' / '+fmt(L,0)+' = <b>'+fmt(Jd*1000)+' m/km</b></div>'+
+    '<div>D teórico (Hazen-Williams, C = '+C+') = <b>'+fmt(Dt*1000,1)+' mm</b></div>'+
+    '<div>Com DN '+r.d+': J = '+fmt(r.J*1000)+' m/km · h<sub>f</sub> = <b>'+fmt(r.hf)+' m</b></div>'+
+    '<div>Sobra de carga = '+fmt(dH)+' − '+fmt(r.hf)+' = <b>'+fmt(r.sobra)+' m</b></div>'+
+  '</div></div>';
+  html+='<div class="card"><h4>Verificações</h4><ul class="checks">'+
+    chk(sH,'Perda de carga ≤ carga disponível','h<sub>f</sub> = '+fmt(r.hf)+' m · ΔH = '+fmt(dH)+' m')+
+    chk(sV,'Velocidade entre 0,6 e 3,0 m/s','V = '+fmt(r.V)+' m/s')+
+  '</ul>'+(r.sobra>2?'<p class="note">Sobra de '+fmt(r.sobra)+' m. Avalie dois diâmetros em série ou válvula redutora para aproveitar a carga.</p>':'')+'</div>';
+  const lo=Math.max(0,idx-2), hi=Math.min(DN_PRESS.length,idx+3);
+  html+='<div class="card"><h4>Comparação de diâmetros</h4><div class="tbl-wrap"><table><thead><tr><th>DN</th><th>V (m/s)</th><th>J (m/km)</th><th>h<sub>f</sub> (m)</th><th>Sobra (m)</th><th>Situação</th></tr></thead><tbody>'+
+    DN_PRESS.slice(lo,hi).map(d=>{ const x=calc(d); const ok=x.sobra>=0; return '<tr'+(d===r.d?' class="sel"':'')+'><td>'+d+'</td><td>'+fmt(x.V)+'</td><td>'+fmt(x.J*1000)+'</td><td>'+fmt(x.hf)+'</td><td>'+fmt(x.sobra)+'</td><td><span class="pill '+(ok?'ok':'bad')+'">'+(ok?'Atende':'Não atende')+'</span></td></tr>'; }).join('')+
+  '</tbody></table></div></div>';
+  out.innerHTML=html+copyBar('out_adu');
+}
+
+/* ---------- DISTRIBUIÇÃO ---------- */
+let dRows=[{n:'T1',L:'300',Q:'12,0',DN:'150',ct:'98'},{n:'T2',L:'250',Q:'8,5',DN:'150',ct:'95'},{n:'T3',L:'400',Q:'5,0',DN:'100',ct:'93'},{n:'T4',L:'350',Q:'2,2',DN:'75',ct:'96'}];
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+function renderRows(){
+  $('d_rows').innerHTML=dRows.map((r,i)=>'<tr>'+
+    '<td><input class="cell name" data-r="'+i+'" data-k="n" value="'+esc(r.n)+'" aria-label="Nome do trecho '+(i+1)+'"></td>'+
+    '<td><input class="cell" inputmode="decimal" data-r="'+i+'" data-k="L" value="'+esc(r.L)+'" aria-label="Comprimento do trecho '+(i+1)+'"></td>'+
+    '<td><input class="cell" inputmode="decimal" data-r="'+i+'" data-k="Q" value="'+esc(r.Q)+'" aria-label="Vazão do trecho '+(i+1)+'"></td>'+
+    '<td><input class="cell" inputmode="decimal" data-r="'+i+'" data-k="DN" value="'+esc(r.DN)+'" aria-label="Diâmetro do trecho '+(i+1)+'"></td>'+
+    '<td><input class="cell" inputmode="decimal" data-r="'+i+'" data-k="ct" value="'+esc(r.ct)+'" aria-label="Cota do terreno final do trecho '+(i+1)+'"></td>'+
+    '<td><button type="button" class="x" data-del="'+i+'" aria-label="Remover trecho '+(i+1)+'">×</button></td></tr>').join('');
+}
+function niceStep(range){ const raw=range/4, p=Math.pow(10,Math.floor(Math.log10(raw))), f=raw/p; return (f<1.5?1:f<3?2:f<7?5:10)*p; }
+function profile(pts,namax){
+  const W=640,H=260,l=52,rr=16,t=16,b=34;
+  const xmax=pts[pts.length-1].x||1;
+  const ys=pts.map(p=>p.ct).concat(pts.map(p=>p.cp)).concat([namax]);
+  let ymin=Math.min.apply(null,ys), ymax=Math.max.apply(null,ys);
+  const st=niceStep(Math.max(ymax-ymin,1)); ymin=Math.floor(ymin/st)*st; ymax=Math.ceil(ymax/st)*st; if(ymax===ymin) ymax+=st;
+  const sx=x=>l+x/xmax*(W-l-rr), sy=y=>t+(ymax-y)/(ymax-ymin)*(H-t-b);
+  let s='<svg class="prof" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Perfil com linha piezométrica e terreno">';
+  for(let y=ymin;y<=ymax+1e-9;y+=st){ s+='<line class="gl" x1="'+l+'" x2="'+(W-rr)+'" y1="'+sy(y)+'" y2="'+sy(y)+'"/><text class="tx" x="'+(l-8)+'" y="'+(sy(y)+4)+'" text-anchor="end">'+fmt(y,0)+'</text>'; }
+  const xs=niceStep(xmax);
+  for(let x=0;x<=xmax+1e-9;x+=xs){ s+='<text class="tx" x="'+sx(x)+'" y="'+(H-12)+'" text-anchor="middle">'+fmt(x,0)+'</text>'; }
+  s+='<text class="tx" x="'+(W-rr)+'" y="'+(H-0)+'" text-anchor="end">distância (m)</text>';
+  const terr=pts.map(p=>sx(p.x)+','+sy(p.ct)).join(' ');
+  s+='<polygon class="ar-terr" points="'+sx(0)+','+sy(ymin)+' '+terr+' '+sx(xmax)+','+sy(ymin)+'"/>';
+  s+='<polyline class="ln-terr" points="'+terr+'"/>';
+  s+='<line class="ln-est" x1="'+sx(0)+'" x2="'+sx(xmax)+'" y1="'+sy(namax)+'" y2="'+sy(namax)+'"/>';
+  s+='<polyline class="ln-piez" points="'+pts.map(p=>sx(p.x)+','+sy(p.cp)).join(' ')+'"/>';
+  pts.forEach(p=>{ s+='<circle class="nd" cx="'+sx(p.x)+'" cy="'+sy(p.cp)+'" r="4"/>'; });
+  return s+'</svg>';
+}
+function calcDistribuicao(){
+  const namin=num('d_namin'),namax=num('d_namax'),ct0=num('d_ct0'),C=+$('d_mat').value;
+  const out=$('out_dis');
+  document.querySelectorAll('#d_rows input.cell').forEach(inp=>{ if(inp.dataset.k!=='n') inp.classList.toggle('bad',!isFinite(parse(inp.value))); });
+  if(![namin,namax,ct0].every(isFinite)){ out.innerHTML=errBox('Preencha as cotas do reservatório.'); return; }
+  if(!dRows.length){ out.innerHTML=banner('warn','Adicione ao menos um trecho.'); return; }
+  let cp=namin, x=0, bad=false; const pts=[{x:0,ct:ct0,cp:namin}], res=[];
+  for(const r of dRows){
+    const L=parse(r.L),q=parse(r.Q),dn=parse(r.DN),ct=parse(r.ct);
+    if(![L,q,dn,ct].every(isFinite)||L<=0||q<=0||dn<=0){ bad=true; break; }
+    const Q=q/1000,D=dn/1000,V=Q/(Math.PI*D*D/4),J=hwJ(Q,C,D),hf=J*L;
+    cp-=hf; x+=L;
+    const pd=cp-ct, pe=namax-ct;
+    const sV=V>3.5?'bad':(V<0.6?'warn':'ok'), sPd=pd>=10?'ok':'bad', sPe=pe<=40?'ok':'bad', sDN=dn>=50?'ok':'bad';
+    res.push({n:r.n,L:L,q:q,dn:dn,V:V,J:J,hf:hf,cp:cp,ct:ct,pd:pd,pe:pe,sV:sV,sPd:sPd,sPe:sPe,sDN:sDN,st:allOk([sV,sPd,sPe,sDN])});
+    pts.push({x:x,ct:ct,cp:cp});
+  }
+  if(bad){ out.innerHTML=errBox('Há células da planilha vazias ou inválidas (marcadas em vermelho).'); return; }
+  const minPd=res.reduce((a,b)=>b.pd<a.pd?b:a), maxPe=res.reduce((a,b)=>b.pe>a.pe?b:a);
+  const nBad=res.filter(r=>r.st!=='ok').length, hfT=namin-cp;
+  const st=nBad?(res.some(r=>r.st==='bad')?'bad':'warn'):'ok';
+  let html=banner(st, st==='ok'?'Todos os trechos atendem à NBR 12218':nBad+' trecho'+(nBad>1?'s':'')+' com pendência');
+  html+='<div class="tiles">'+tile('Menor pressão dinâmica',fmt(minPd.pd,1),'mca · '+esc(minPd.n),true)+tile('Maior pressão estática',fmt(maxPe.pe,1),'mca · '+esc(maxPe.n))+tile('Perda de carga total',fmt(hfT),'m')+tile('Extensão',fmt(x,0),'m')+'</div>';
+  html+='<div class="card"><h4>Resultados por trecho</h4><div class="tbl-wrap"><table><thead><tr><th>Trecho</th><th>V (m/s)</th><th>J (m/km)</th><th>h<sub>f</sub> (m)</th><th>CP final (m)</th><th>P din. (mca)</th><th>P est. (mca)</th><th>Situação</th></tr></thead><tbody>'+
+    res.map(r=>{ const why=[]; if(r.sV==='bad')why.push('V > 3,5'); if(r.sV==='warn')why.push('V < 0,6'); if(r.sPd==='bad')why.push('P din. < 10'); if(r.sPe==='bad')why.push('P est. > 40'); if(r.sDN==='bad')why.push('DN < 50');
+      return '<tr><td>'+esc(r.n)+'</td><td>'+fmt(r.V)+'</td><td>'+fmt(r.J*1000)+'</td><td>'+fmt(r.hf)+'</td><td>'+fmt(r.cp)+'</td><td>'+fmt(r.pd,1)+'</td><td>'+fmt(r.pe,1)+'</td><td><span class="pill '+r.st+'">'+(r.st==='ok'?'Atende':why.join(' · '))+'</span></td></tr>'; }).join('')+
+  '</tbody></table></div><p class="note">Critérios NBR 12218: pressão dinâmica mínima 10 mca (100 kPa), estática máxima 40 mca (400 kPa), velocidade entre 0,6 e 3,5 m/s, DN mínimo 50.</p></div>';
+  html+='<div class="card"><h4>Perfil da linha</h4>'+profile(pts,namax)+
+    '<div class="legend"><span><i style="border-color:var(--accent)"></i>Linha piezométrica (NA mín.)</span><span><i style="border-color:var(--muted);border-top-style:dashed"></i>Nível estático (NA máx.)</span><span><i style="border-color:var(--terrain)"></i>Terreno</span></div></div>';
+  out.innerHTML=html+copyBar('out_dis');
+}
+
+/* ---------- ELEVATÓRIA ---------- */
+const rv=n=>document.querySelector('input[name='+n+']:checked').value;
+const PV=[[0,0.611],[5,0.872],[10,1.228],[15,1.705],[20,2.339],[25,3.169],[30,4.246],[35,5.628],[40,7.384]];
+function pvM(t){ if(t<=PV[0][0]) return PV[0][1]/9.78; for(let i=1;i<PV.length;i++){ if(t<=PV[i][0]){ const a=PV[i-1],b=PV[i]; return (a[1]+(b[1]-a[1])*(t-a[0])/(b[0]-a[0]))/9.78; } } return PV[PV.length-1][1]/9.78; }
+function patmM(z){ return 101.325*Math.pow(1-2.25577e-5*z,5.25588)/9.78; }
+function vSucMax(dn){ let v=0.7; [[50,0.7],[75,0.8],[100,0.9],[150,1.0],[200,1.1],[250,1.2],[300,1.4],[400,1.5]].forEach(t=>{ if(dn>=t[0]) v=t[1]; }); return v; }
+function tRec(cv){ return cv<=20?10:(cv<=100?15:20); }
+function fmtMotor(m){ return fmt(m, m%1===0?0:((m*10)%1===0?1:2)); }
+
+function wellSVG(o){
+  const W=640,H=360,t=16,b=16;
+  const zs=[o.ct,o.cc,o.NAmax,o.NAmin,o.zin,o.fundo]; if(o.cent) zs.push(o.eixo);
+  const zmax=Math.max.apply(null,zs)+0.7, zmin=Math.min.apply(null,zs)-0.4;
+  const sy=z=>t+(zmax-z)/(zmax-zmin)*(H-t-b);
+  const x0=170,x1=330,xm=(x0+x1)/2, yT=sy(o.ct), yF=sy(o.fundo);
+  let s='<svg class="prof" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Corte esquemático do poço de sucção com níveis de operação">';
+  s+='<rect class="sec-soil" x="10" y="'+yT+'" width="'+(W-20)+'" height="'+(H-yT)+'"/>';
+  s+='<rect class="sec-void" x="'+x0+'" y="'+yT+'" width="'+(x1-x0)+'" height="'+(yF-yT)+'"/>';
+  if(o.cent && o.eixo<o.ct){ const yP=sy(o.eixo)+22; s+='<rect class="sec-void" x="'+(x1+30)+'" y="'+yT+'" width="110" height="'+(yP-yT)+'"/><path class="sec-wall" d="M'+(x1+30)+','+yT+' V'+yP+' H'+(x1+140)+' V'+yT+'"/>'; }
+  s+='<line class="sec-terr" x1="10" x2="'+(W-10)+'" y1="'+yT+'" y2="'+yT+'"/>';
+  s+='<rect class="sec-water" x="'+x0+'" y="'+sy(o.NAmax)+'" width="'+(x1-x0)+'" height="'+(yF-sy(o.NAmax))+'"/>';
+  // afluente
+  const ph=Math.max(10,sy(o.cc)-sy(o.cc+0.25));
+  s+='<rect class="sec-in" x="20" y="'+(sy(o.cc)-ph)+'" width="'+(x0-20)+'" height="'+ph+'"/>';
+  s+='<path class="sec-wall" d="M'+x0+','+yT+' V'+yF+' H'+x1+' V'+yT+'"/>';
+  s+='<line class="sec-na" x1="'+x0+'" x2="'+x1+'" y1="'+sy(o.NAmax)+'" y2="'+sy(o.NAmax)+'"/>';
+  s+='<line class="sec-na min" x1="'+x0+'" x2="'+x1+'" y1="'+sy(o.NAmin)+'" y2="'+sy(o.NAmin)+'"/>';
+  s+='<line class="sec-ref" x1="'+x0+'" x2="'+x1+'" y1="'+sy(o.zin)+'" y2="'+sy(o.zin)+'"/>';
+  const exitY=yT-18;
+  if(!o.cent){
+    const ph2=Math.max(16,Math.min(yF-sy(o.fundo+0.7),(yF-sy(o.NAmin))*0.8)), py=yF-ph2;
+    s+='<path class="sec-pipe" d="M'+(xm+10)+','+py+' V'+exitY+' H'+(W-10)+'"/>';
+    s+='<rect class="sec-pump" x="'+(xm-24)+'" y="'+py+'" width="40" height="'+ph2+'" rx="5"/>';
+  } else {
+    const ye=sy(o.eixo), xp=x1+85;
+    s+='<path class="sec-pipe" d="M'+xm+','+sy(o.zin)+' V'+ye+' H'+(xp-14)+'"/>';
+    s+='<path class="sec-pipe" d="M'+xp+','+(ye-14)+' V'+exitY+' H'+(W-10)+'"/>';
+    s+='<circle class="sec-pump" cx="'+xp+'" cy="'+ye+'" r="15"/>';
+  }
+  s+='<text class="tx" x="'+(W-12)+'" y="'+(exitY-8)+'" text-anchor="end">recalque →</text>';
+  s+='<text class="tx" x="22" y="'+(sy(o.cc)-ph-6)+'">afluente</text>';
+  const L=[[o.ct,'Terreno'],[o.cc,'Chegada GI'],[o.NAmax,'NA máx.'],[o.NAmin,'NA mín.'],[o.zin,'Sucção'],[o.fundo,'Fundo']];
+  if(o.cent) L.push([o.eixo,'Eixo']);
+  const lab=L.map(l=>({z:l[0],t:l[1],y:sy(l[0])})).sort((a,b)=>a.y-b.y);
+  for(let i=1;i<lab.length;i++){ if(lab[i].y<lab[i-1].y+17) lab[i].ly=(lab[i-1].ly||lab[i-1].y)+17; }
+  lab.forEach(l=>{ const ly=Math.max(l.ly||l.y, (l.ly||l.y)); l.ly=ly; });
+  for(let i=1;i<lab.length;i++){ if(lab[i].ly<lab[i-1].ly+17) lab[i].ly=lab[i-1].ly+17; }
+  const shift=Math.max(0,lab[lab.length-1].ly-(H-6)); lab.forEach(l=>{ l.ly-=shift; });
+  lab.forEach(l=>{ s+='<path class="sec-guide" d="M'+(x1+150)+','+l.y+' L'+(x1+168)+','+(l.ly-4)+' H'+(x1+176)+'"/><text class="sec-lbl" x="'+(x1+180)+'" y="'+l.ly+'"><tspan class="k">'+l.t+' </tspan>'+fmt(l.z,2)+'</text>'; });
+  return s+'</svg>';
+}
+
+function calcElevatoria(){
+  const esg=rv('e_fluido')==='esg', cent=rv('e_tipo')==='cent', poco=rv('e_arr')==='poco', circ=rv('e_forma')==='circ';
+  const hfSrc=$('e_hf_src').value;
+  $('e_wrap_qm').hidden=!esg; $('e_wrap_h').hidden=esg;
+  $('e_wrap_poco').hidden=!poco; $('e_wrap_fonte').hidden=poco;
+  $('e_wrap_cent').hidden=!cent; $('e_wrap_circ').hidden=!circ; $('e_wrap_ret').hidden=circ;
+  $('e_wrap_hfm').hidden=hfSrc!=='man';
+  const out=$('out_ele');
+  const q=num('e_q'), nop=Math.round(num('e_nop')), nres=Math.round(num('e_nres')), cd=num('e_cd'), etb=num('e_eb'), etm=num('e_em');
+  const qm=esg?num('e_qm'):NaN, h=esg?24:num('e_h');
+  const dsDN=+$('e_ds').value;
+  if(![q,nop,nres,cd,etb,etm,h].every(isFinite)||(esg&&!isFinite(qm))||q<=0||nop<1||nres<0||etb<=0||etb>100||etm<=0||etm>100||h<=0||h>24){
+    out.innerHTML=errBox('Confira os campos destacados. Use ao menos 1 bomba em operação, rendimentos entre 0 e 100% e funcionamento entre 0 e 24 h.'); return; }
+
+  const Qtot=esg?q:q*24/h, Qu=Qtot/nop, Qt=Qtot/1000, Qm3=Qu/1000;
+  const Ds=dsDN/1000, As=Math.PI*Ds*Ds/4, Vs=Qm3/As, Fr=Vs/Math.sqrt(G*Ds), S=Ds*(1+2.3*Fr), Cb=0.5*Ds;
+  const checks=[], st=[], notes=[];
+  const push=(s,l,d)=>{ st.push(s); checks.push(chk(s,l,d)); };
+
+  /* níveis */
+  let NAmin, zin, fundo, P={};
+  if(poco){
+    const ct=num('e_ct'), cc=num('e_cc'), tc=num('e_tc'), A=circ? Math.PI*Math.pow(num('e_dp'),2)/4 : num('e_lp')*num('e_bp');
+    if(![ct,cc,tc,A].every(isFinite)||tc<=0||A<=0){ out.innerHTML=errBox('Preencha as cotas, as dimensões do poço e o tempo de ciclo com números positivos.'); return; }
+    if(cc>=ct){ out.innerHTML=errBox('A chegada do afluente precisa estar abaixo da cota do terreno.'); return; }
+    const Vstep=Qm3*tc*60/4, Vu=Vstep*nop, hu=Vu/A, NAmax=cc-0.10;
+    NAmin=NAmax-hu; zin=NAmin-S; fundo=zin-Cb;
+    P={ct:ct,cc:cc,tc:tc,A:A,Vstep:Vstep,Vu:Vu,hu:hu,NAmax:NAmax,prof:ct-fundo};
+    if(esg){ const Vef=A*((NAmax+NAmin)/2-fundo); P.tdet=Vef/(qm/1000)/60; P.Vef=Vef; }
+  } else {
+    const nas=num('e_nas'), fs=num('e_fs');
+    if(![nas,fs].every(isFinite)){ out.innerHTML=errBox('Preencha o NA mínimo e a cota do fundo no ponto de sucção.'); return; }
+    if(fs>=nas){ out.innerHTML=errBox('O fundo precisa estar abaixo do NA mínimo da fonte.'); return; }
+    NAmin=nas; fundo=fs; zin=fs+Cb; P.avail=nas-zin;
+  }
+
+  /* sucção (centrífuga) */
+  let hs=0, hfs=0, npshd=NaN, npshr=NaN, eixo=NaN, Cs=0, ls=0, ks=0, alt=0, temp=0;
+  if(cent){
+    hs=num('e_hs'); ls=num('e_ls'); ks=num('e_ks'); npshr=num('e_npshr'); alt=num('e_alt'); temp=num('e_temp'); Cs=+$('e_mats').value;
+    if(![hs,ls,ks,npshr,alt,temp].every(isFinite)||ls<0||ks<0){ out.innerHTML=errBox('Preencha os dados de sucção da bomba centrífuga.'); return; }
+    eixo=NAmin+hs;
+    hfs=hwJ(Qm3,Cs,Ds)*ls+ks*Vs*Vs/(2*G);
+    npshd=patmM(alt)-pvM(temp)-hs-hfs;
+  }
+
+  /* recalque */
+  let hrec, rp=null;
+  if(hfSrc==='aba'){
+    if(!recPipe){ out.innerHTML=errBox('A aba Linha de recalque tem campos inválidos. Corrija lá ou escolha digitar a perda de carga.'); return; }
+    rp=pipeCalc(Qt,recPipe.C,recPipe.d,recPipe.L,recPipe.K,0,1); hrec=rp.hfd+rp.hfl;
+  } else { hrec=num('e_hfm'); if(!isFinite(hrec)||hrec<0){ out.innerHTML=errBox('Digite a perda de carga no recalque.'); return; } }
+  const Hg=cd-NAmin;
+  if(Hg<=0){ out.innerHTML=errBox('A descarga está abaixo do NA mínimo de sucção. Nesse caso o escoamento pode ser por gravidade.'); return; }
+  const Hman=Hg+hrec+hfs;
+
+  /* potência */
+  const eb=etb/100, em=etm/100;
+  const Pcv=1000*Qm3*Hman/(75*eb), PkW=G*Qm3*Hman/eb, Pel=PkW/em;
+  const mo=motorFor(Pcv);
+  const hop=esg?Math.min(24,24*qm/q):h;
+  const kwh=nop*Pel*hop*30;
+
+  /* verificações */
+  if(cent){
+    if(esg) push(Vs>=0.6&&Vs<=1.5?'ok':(Vs>1.5?'bad':'warn'),'Velocidade de sucção entre 0,6 e 1,5 m/s','V = '+fmt(Vs)+' m/s (por bomba)');
+    else { const vm=vSucMax(dsDN); push(Vs<=vm?'ok':'bad','Velocidade de sucção ≤ '+fmt(vm)+' m/s (NBR 12214, DN '+dsDN+')','V = '+fmt(Vs)+' m/s (por bomba)'); }
+    push(npshd>=npshr+0.5?'ok':(npshd>=npshr?'warn':'bad'),'NPSH disponível ≥ NPSH requerido + 0,5 m','NPSH<sub>d</sub> = '+fmt(npshd)+' m · NPSH<sub>r</sub> = '+fmt(npshr)+' m');
+    if(esg && hs>0) push('warn','Bomba de esgoto afogada','Eixo '+fmt(hs)+' m acima do NA mínimo: exige escorva. Prefira eixo abaixo do NA mínimo.');
+  }
+  if(!poco) push(P.avail>=S?'ok':'bad','Submergência sobre a entrada de sucção','Disponível '+fmt(P.avail)+' m · mínima S = '+fmt(S)+' m');
+  if(poco){
+    const tr=tRec(mo.m||Pcv);
+    push(P.tc>=tr?'ok':'warn','Tempo de ciclo ≥ '+tr+' min para motor de '+(mo.m?fmtMotor(mo.m):'—')+' cv',fmt(60/P.tc,1)+' partidas por hora no pior caso');
+    if(esg) push(P.tdet<=30?'ok':'warn','Tempo de detenção na vazão média ≤ 30 min (NBR 12208)','t = V<sub>ef</sub>/Q<sub>méd</sub> = '+fmt(P.Vef)+' m³ / '+fmt(qm)+' L/s = '+fmt(P.tdet,1)+' min');
+  }
+  if(esg){
+    push(dsDN>=100?'ok':'bad','Diâmetro de sucção ≥ 100 mm (esgoto)','DN '+dsDN);
+    if(rp) push(recPipe.d>=100?'ok':'bad','Diâmetro de recalque ≥ 100 mm (esgoto)','DN '+recPipe.d);
+  }
+  if(rp) push(rp.V<0.6?'warn':(rp.V>3?'bad':'ok'),'Velocidade no recalque entre 0,6 e 3,0 m/s','V = '+fmt(rp.V)+' m/s com Q = '+fmt(Qtot)+' L/s');
+  if(esg && !poco) push('warn','Esgoto sem poço de sucção','Sem volume de regularização, a bomba liga e desliga conforme a chegada. Use só com contribuição regular ou estação compacta.');
+
+  const sAll=allOk(st);
+  const tipoTxt=cent?'Centrífuga de eixo horizontal':'Submersível';
+  let html=banner(sAll, sAll==='ok'?tipoTxt+': '+(nop+nres)+' bomba'+(nop+nres>1?'s':'')+' de '+(mo.m?fmtMotor(mo.m):'—')+' cv atendem aos critérios':(sAll==='bad'?'Há critérios não atendidos. Veja as verificações':'Revise os itens marcados com atenção'));
+  html+='<div class="tiles">'+tile('Vazão por bomba',fmt(Qu),'L/s')+tile('Altura manométrica',fmt(Hman),'mca')+tile('Potência no eixo',fmt(Pcv),'cv')+tile('Motor comercial',mo.m?fmtMotor(mo.m):'> 500','cv',true)+'</div>';
+  if(poco) html+='<div class="tiles">'+tile('Volume útil',fmt(P.Vu),'m³')+tile('Altura útil',fmt(P.hu),'m')+tile('NA mínimo',fmt(NAmin),'m')+tile('Profundidade',fmt(P.prof),'m')+'</div>';
+
+  html+='<div class="card"><h4>Especificação para consulta ao catálogo</h4><div class="tbl-wrap"><table><tbody>'+
+    '<tr><td>Tipo</td><td>'+tipoTxt+(esg?' para esgoto':' para água')+'</td></tr>'+
+    '<tr><td>Quantidade</td><td>'+nop+' em operação + '+nres+' reserva</td></tr>'+
+    '<tr><td>Ponto de trabalho</td><td>'+fmt(Qu)+' L/s ('+fmt(Qu*3.6,1)+' m³/h) a '+fmt(Hman)+' mca</td></tr>'+
+    '<tr><td>Potência no eixo</td><td>'+fmt(Pcv)+' cv ('+fmt(PkW)+' kW)</td></tr>'+
+    '<tr><td>Potência elétrica absorvida</td><td>'+fmt(Pel)+' kW por bomba</td></tr>'+
+    '<tr><td>Motor</td><td>'+(mo.m?fmtMotor(mo.m)+' cv ('+fmt(mo.m*0.7355,1)+' kW)':'acima de 500 cv')+'</td></tr>'+
+    '<tr><td>Potência instalada</td><td>'+(mo.m?fmtMotor(mo.m*(nop+nres))+' cv':'—')+'</td></tr>'+
+    '<tr><td>Consumo estimado</td><td>'+fmt(kwh,0)+' kWh/mês ('+fmt(hop,1)+' h/dia)</td></tr>'+
+    (cent?'<tr><td>NPSH disponível</td><td>'+fmt(npshd)+' m</td></tr>':'')+
+  '</tbody></table></div></div>';
+
+  html+='<div class="card"><h4>Memória de cálculo</h4><div class="memo">'+
+    (esg?'<div>Q bombeada = Q<sub>máx</sub> afluente = <b>'+fmt(Qtot)+' L/s</b></div>'
+        :'<div>Q bombeada = Q·24/h = '+fmt(q)+' × 24 / '+fmt(h,1)+' = <b>'+fmt(Qtot)+' L/s</b></div>')+
+    '<div>Q por bomba = '+fmt(Qtot)+' / '+nop+' = <b>'+fmt(Qu)+' L/s</b></div>'+
+    (poco?
+      '<div>V útil por bomba = Q<sub>b</sub>·T/4 = '+fmt(Qm3,4)+' × '+fmt(P.tc*60,0)+' / 4 = <b>'+fmt(P.Vstep)+' m³</b>'+(nop>1?' × '+nop+' etapas = <b>'+fmt(P.Vu)+' m³</b>':'')+'</div>'+
+      '<div>Área do poço = <b>'+fmt(P.A)+' m²</b> · h útil = V/A = <b>'+fmt(P.hu)+' m</b></div>'+
+      '<div>NA máx. = GI afluente − 0,10 = '+fmt(P.cc)+' − 0,10 = <b>'+fmt(P.NAmax)+' m</b></div>'+
+      '<div>NA mín. = NA máx. − h útil = <b>'+fmt(NAmin)+' m</b></div>':'<div>NA mínimo da fonte = <b>'+fmt(NAmin)+' m</b></div>')+
+    '<div>V sucção = '+fmt(Vs)+' m/s · Fr = V/√(g·D) = '+fmt(Fr,3)+'</div>'+
+    '<div>Submergência S = D·(1 + 2,3·Fr) = '+fmt(Ds,3)+' × (1 + 2,3 × '+fmt(Fr,3)+') = <b>'+fmt(S)+' m</b></div>'+
+    '<div>Folga ao fundo = 0,5·D = '+fmt(Cb)+' m · fundo = <b>'+fmt(fundo)+' m</b></div>'+
+    '<div>H<sub>g</sub> = descarga − NA mín. = '+fmt(cd)+' − '+fmt(NAmin)+' = <b>'+fmt(Hg)+' m</b></div>'+
+    (rp?'<div>Recalque DN '+recPipe.d+', L = '+fmt(recPipe.L,0)+' m, C = '+recPipe.C+': h<sub>f</sub> = '+fmt(rp.hfd)+' + '+fmt(rp.hfl)+' = <b>'+fmt(hrec)+' m</b></div>'
+       :'<div>Perda no recalque (digitada) = <b>'+fmt(hrec)+' m</b></div>')+
+    (cent?'<div>Perda na sucção = J·L + ΣK·V²/2g = <b>'+fmt(hfs)+' m</b></div>':'')+
+    '<div>H<sub>man</sub> = '+fmt(Hg)+' + '+fmt(hrec)+(cent?' + '+fmt(hfs):'')+' = <b>'+fmt(Hman)+' mca</b></div>'+
+    '<div>P = γ·Q·H/(75·η<sub>b</sub>) = 1000 × '+fmt(Qm3,4)+' × '+fmt(Hman)+' / (75 × '+fmt(eb)+') = <b>'+fmt(Pcv)+' cv</b></div>'+
+    '<div>Folga de '+fmt(mo.f*100,0)+'% → '+fmt(mo.need)+' cv → motor <b>'+(mo.m?fmtMotor(mo.m):'—')+' cv</b></div>'+
+    (cent?'<div>NPSH<sub>d</sub> = P<sub>atm</sub>/γ − P<sub>v</sub>/γ − h<sub>s</sub> − h<sub>f,s</sub> = '+fmt(patmM(alt))+' − '+fmt(pvM(temp))+' − ('+fmt(hs)+') − '+fmt(hfs)+' = <b>'+fmt(npshd)+' m</b></div>':'')+
+  '</div></div>';
+
+  if(poco){
+    html+='<div class="card"><h4>Corte esquemático do poço</h4><div class="tbl-wrap">'+wellSVG({ct:P.ct,cc:P.cc,NAmax:P.NAmax,NAmin:NAmin,zin:zin,fundo:fundo,cent:cent,eixo:eixo})+'</div>'+
+      '<p class="note">'+(cent?'Bomba em poço seco, ao lado do poço úmido, com eixo na cota '+fmt(eixo)+' m.':'Bomba apoiada no fundo do poço úmido.')+' Confira se a área comporta '+(nop+nres)+' bomba'+(nop+nres>1?'s':'')+' com os espaçamentos do fabricante.</p></div>';
+  }
+
+  html+='<div class="card"><h4>Verificações</h4><ul class="checks">'+checks.join('')+'</ul></div>';
+
+  if(cent){
+    notes.push('Centrífuga exige casa de bombas ou poço seco, ventilação e acesso para manutenção.');
+    notes.push(hs>0?'Com o eixo acima do NA, a sucção precisa de válvula de pé ou sistema de escorva.':'Com o eixo abaixo do NA mínimo a bomba fica afogada e parte sem escorva.');
+  } else {
+    notes.push('Submersível dispensa casa de bombas e escorva. Preveja trilho-guia e dispositivo de içamento.');
+    if(esg) notes.push('Para esgoto, especifique rotor que permita passagem de sólidos compatível com o DN da boca.');
+  }
+  html+='<div class="card"><h4>Observações</h4>'+notes.map(n=>'<p class="note">'+n+'</p>').join('')+'</div>';
+  out.innerHTML=html+copyBar('out_ele');
+}
+
+/* ---------- CAPACIDADE DA LINHA ---------- */
+function bisect(f){ let lo=0, hi=0.001; for(let i=0;i<40&&f(hi)<0;i++) hi*=2; for(let i=0;i<100;i++){ const m=(lo+hi)/2; if(f(m)<0) lo=m; else hi=m; } return (lo+hi)/2; }
+function capOf(d,p){
+  const D=d/1000, A=Math.PI*D*D/4;
+  const H=Q=>p.hg+hwJ(Q,p.C,D)*p.L+p.K*Math.pow(Q/A,2)/(2*G);
+  let Q=p.vmax*A, lim='Velocidade máxima';
+  if(p.lim==='hman'){ const Qh=bisect(x=>H(x)-p.hd); if(Qh<Q){ Q=Qh; lim='Altura manométrica da bomba'; } }
+  if(p.lim==='pot'){ const tgt=p.pm*75*p.eta; const Qp=bisect(x=>1000*x*H(x)-tgt); if(Qp<Q){ Q=Qp; lim='Potência do motor'; } }
+  const Hq=H(Q), J=hwJ(Q,p.C,D);
+  return {d:d,Q:Q,V:Q/A,H:Hq,J:J,hf:Hq-p.hg,cv:1000*Q*Hq/(75*p.eta),lim:lim};
+}
+function popOf(QLs,p){ return p.esg ? (QLs-p.qinf)*86400/(p.k1*p.k2*p.c*p.q) : QLs*(p.h/24)*86400/(p.k1*p.q); }
+function calcCapacidade(){
+  const esg=rv('k_fluido')==='esg', lim=$('k_lim').value;
+  ['k_fk2','k_fc','k_fti','k_fext'].forEach(id=>$(id).hidden=!esg); $('k_fh').hidden=esg;
+  $('k_wrap_h').hidden=lim!=='hman'; $('k_wrap_p').hidden=lim!=='pot';
+  const out=$('out_cap');
+  const p={esg:esg,lim:lim,C:+$('k_mat').value,L:num('k_l'),hg:num('k_hg'),K:num('k_k'),vmax:num('k_vmax'),eta:num('k_eta')/100,q:num('k_q'),k1:num('k_k1'),hab:num('k_hab')};
+  const need=[p.L,p.hg,p.K,p.vmax,p.eta,p.q,p.k1,p.hab];
+  if(esg){ p.k2=num('k_k2'); p.c=num('k_c'); const ti=num('k_ti'), ext=num('k_ext'); p.qinf=ti*ext; p.ti=ti; p.ext=ext; need.push(p.k2,p.c,ti,ext); p.h=24; }
+  else { p.h=num('k_h'); need.push(p.h); }
+  if(lim==='hman'){ p.hd=num('k_hd'); need.push(p.hd); }
+  if(lim==='pot'){ p.pm=num('k_pm'); need.push(p.pm); }
+  if(!need.every(isFinite)||p.L<=0||p.vmax<=0||p.eta<=0||p.eta>1||p.q<=0||p.k1<=0||p.hab<=0||p.K<0||(esg&&(p.k2<=0||p.c<=0))||(!esg&&(p.h<=0||p.h>24))){
+    out.innerHTML=errBox('Confira os campos destacados com números válidos e positivos.'); return; }
+  if(lim==='hman' && p.hd<=p.hg){ out.innerHTML=errBox('A altura manométrica disponível precisa ser maior que o desnível geométrico ('+fmt(p.hg)+' m).'); return; }
+  if(lim==='pot' && p.pm<=0){ out.innerHTML=errBox('Informe a potência do motor instalado.'); return; }
+  const dn=+$('k_dn').value, r=capOf(dn,p), QLs=r.Q*1000;
+  if(esg && QLs<=p.qinf){ out.innerHTML=errBox('A capacidade da linha ('+fmt(QLs)+' L/s) não supera a infiltração ('+fmt(p.qinf)+' L/s). Revise a extensão da rede ou Tᵢ.'); return; }
+  const pop=popOf(QLs,p), uh=Math.floor(pop/p.hab);
+  const sV=r.V<0.6?'warn':(r.V>3?'bad':'ok');
+  let html=banner(sV==='ok'?'ok':sV, 'DN '+dn+' atende cerca de '+fmt(Math.floor(pop),0)+' habitantes ('+fmt(uh,0)+' unidades habitacionais)');
+  html+='<div class="tiles">'+tile('População',fmt(Math.floor(pop),0),'hab',true)+tile('Unidades habitacionais',fmt(uh,0),'UH')+tile('Vazão máxima',fmt(QLs),'L/s')+tile('Velocidade',fmt(r.V),'m/s')+'</div>';
+  html+='<div class="card"><h4>Memória de cálculo</h4><div class="memo">'+
+    '<div>Fator limitante: <b>'+r.lim+'</b></div>'+
+    '<div>Q por velocidade = V<sub>máx</sub>·A = '+fmt(p.vmax)+' × '+fmt(Math.PI*Math.pow(dn/1000,2)/4,5)+' = '+fmt(p.vmax*Math.PI*Math.pow(dn/1000,2)/4*1000)+' L/s</div>'+
+    (lim==='hman'?'<div>Q com H<sub>g</sub> + h<sub>f</sub>(Q) = '+fmt(p.hd)+' mca → '+fmt(capOf(dn,Object.assign({},p,{vmax:1e3})).Q*1000)+' L/s</div>':'')+
+    (lim==='pot'?'<div>Q com γ·Q·H(Q)/(75·η) = '+fmt(p.pm)+' cv → '+fmt(capOf(dn,Object.assign({},p,{vmax:1e3})).Q*1000)+' L/s</div>':'')+
+    '<div>Q adotada = <b>'+fmt(QLs)+' L/s</b> · h<sub>f</sub> = '+fmt(r.hf)+' m · H<sub>man</sub> = <b>'+fmt(r.H)+' mca</b></div>'+
+    (esg?
+      '<div>Q<sub>inf</sub> = Tᵢ·L = '+fmt(p.ti,3)+' × '+fmt(p.ext)+' = '+fmt(p.qinf,3)+' L/s</div>'+
+      '<div>P = (Q − Q<sub>inf</sub>)·86.400 / (K₁·K₂·C·q) = ('+fmt(QLs)+' − '+fmt(p.qinf,3)+') × 86.400 / ('+fmt(p.k1)+' × '+fmt(p.k2)+' × '+fmt(p.c)+' × '+fmt(p.q,0)+') = <b>'+fmt(Math.floor(pop),0)+' hab</b></div>'
+     :'<div>Q<sub>dia</sub> = Q·h/24 = '+fmt(QLs)+' × '+fmt(p.h,1)+' / 24 = '+fmt(QLs*p.h/24)+' L/s</div>'+
+      '<div>P = Q<sub>dia</sub>·86.400 / (K₁·q) = '+fmt(QLs*p.h/24)+' × 86.400 / ('+fmt(p.k1)+' × '+fmt(p.q,0)+') = <b>'+fmt(Math.floor(pop),0)+' hab</b></div>')+
+    '<div>UH = P / hab por UH = '+fmt(Math.floor(pop),0)+' / '+fmt(p.hab)+' = <b>'+fmt(uh,0)+' UH</b></div>'+
+    '<div>Potência para a vazão máxima = <b>'+fmt(r.cv)+' cv</b> (η = '+fmt(p.eta*100,0)+'%)</div>'+
+  '</div></div>';
+  html+='<div class="card"><h4>Verificações</h4><ul class="checks">'+
+    chk(sV,'Velocidade na vazão máxima entre 0,6 e 3,0 m/s','V = '+fmt(r.V)+' m/s')+
+    (p.vmax>3?chk('warn','Velocidade máxima adotada','O limite digitado ('+fmt(p.vmax)+' m/s) passa de 3,0 m/s'):'')+
+  '</ul></div>';
+  const idx=DN_PRESS.indexOf(dn), lo=Math.max(0,idx-2), hi=Math.min(DN_PRESS.length,idx+3);
+  html+='<div class="card"><h4>Capacidade de outros diâmetros</h4><div class="tbl-wrap"><table><thead><tr><th>DN</th><th>Q (L/s)</th><th>V (m/s)</th><th>H<sub>man</sub> (mca)</th><th>População</th><th>UH</th><th>Limite</th></tr></thead><tbody>'+
+    DN_PRESS.slice(lo,hi).map(d=>{ const x=capOf(d,p), ql=x.Q*1000, pp=popOf(ql,p); const okp=pp>0;
+      return '<tr'+(d===dn?' class="sel"':'')+'><td>'+d+'</td><td>'+fmt(ql)+'</td><td>'+fmt(x.V)+'</td><td>'+fmt(x.H)+'</td><td>'+(okp?fmt(Math.floor(pp),0):'—')+'</td><td>'+(okp?fmt(Math.floor(pp/p.hab),0):'—')+'</td><td>'+(x.lim==='Velocidade máxima'?'velocidade':(x.lim==='Potência do motor'?'motor':'bomba'))+'</td></tr>'; }).join('')+
+  '</tbody></table></div><p class="note">'+(esg?'População calculada pela vazão máxima de esgoto (K₁·K₂·C·q) somada à infiltração.':'População calculada pela vazão máxima diária (K₁·q) bombeada em '+fmt(p.h,1)+' h/dia.')+'</p></div>';
+  out.innerHTML=html+copyBar('out_cap');
+}
+
+/* ---------- vínculo automático com a aba Vazões ---------- */
+const SRC=[['agua_med','Água · média'],['agua_dia','Água · máx. diária (K₁)'],['agua_hora','Água · máx. horária (K₁K₂)'],['esg_min','Esgoto · mínima'],['esg_med','Esgoto · média'],['esg_max','Esgoto · máxima'],['manual','Digitar manualmente']];
+document.querySelectorAll('select.src').forEach(s=>{ s.innerHTML=SRC.map(o=>'<option value="'+o[0]+'">'+o[1]+'</option>').join(''); s.value=s.dataset.default; });
+function applyLinks(){
+  document.querySelectorAll('select.src').forEach(s=>{
+    s.querySelectorAll('option').forEach(o=>{ const base=SRC.find(x=>x[0]===o.value)[1]; const f=flows[o.value]; o.textContent = f&&isFinite(f.v) ? base+' · '+fmt(f.v)+' L/s' : base; });
+    const inp=$(s.dataset.target), ctl=inp.closest('.ctl'), k=s.value;
+    if(k!=='manual'){
+      inp.readOnly=true; ctl.classList.add('linked');
+      const f=flows[k]; if(f&&isFinite(f.v)) inp.value=f.v.toFixed(2).replace('.',',');
+    } else { inp.readOnly=false; ctl.classList.remove('linked'); }
+  });
+}
+
+/* ---------- orquestração ---------- */
+function recalc(){
+  try{ calcVazoes(); }catch(e){ $('out_vaz').innerHTML=errBox('Erro no cálculo: '+e.message); }
+  applyLinks();
+  [[calcColetora,'out_col'],[calcRecalque,'out_rec'],[calcAdutora,'out_adu'],[calcDistribuicao,'out_dis'],[calcElevatoria,'out_ele'],[calcCapacidade,'out_cap']].forEach(p=>{ try{ p[0](); }catch(e){ $(p[1]).innerHTML=errBox('Erro no cálculo: '+e.message); } });
+}
+document.addEventListener('input',e=>{
+  const t=e.target;
+  if(t.classList&&t.classList.contains('cell')){ dRows[+t.dataset.r][t.dataset.k]=t.value; }
+  recalc();
+});
+document.addEventListener('change',recalc);
+document.addEventListener('click',e=>{
+  const chip=e.target.closest('.chip');
+  if(chip){ $(chip.dataset.target).value=chip.dataset.val.replace('.',','); recalc(); return; }
+  const del=e.target.closest('[data-del]');
+  if(del){ dRows.splice(+del.dataset.del,1); renderRows(); recalc(); return; }
+  if(e.target.id==='k_copy'){ [['v_q','k_q'],['v_k1','k_k1'],['v_k2','k_k2'],['v_c','k_c'],['v_ti','k_ti'],['v_ext','k_ext'],['v_hab','k_hab']].forEach(p=>{ $(p[1]).value=$(p[0]).value; }); $('k_toast').textContent='Parâmetros copiados da aba Vazões.'; recalc(); return; }
+  if(e.target.id==='d_add'){ const last=dRows[dRows.length-1]; dRows.push({n:'T'+(dRows.length+1),L:'200',Q:last?last.Q:'1,0',DN:last?last.DN:'75',ct:last?last.ct:'95'}); renderRows(); recalc(); return; }
+  const cp=e.target.closest('.copy');
+  if(cp){
+    const src=$(cp.dataset.src); const clone=src.cloneNode(true); clone.querySelectorAll('.actions').forEach(a=>a.remove());
+    document.body.appendChild(clone); clone.style.position='absolute'; clone.style.left='-9999px';
+    const text=clone.innerText.replace(/\n{3,}/g,'\n\n').trim(); clone.remove();
+    const toast=cp.parentNode.querySelector('.toast');
+    const fallback=()=>{ const ta=document.createElement('textarea'); ta.className='copybox'; ta.value=text; ta.readOnly=true; cp.parentNode.after(ta); ta.focus(); ta.select(); toast.textContent='Selecione e copie o texto abaixo.'; };
+    try{ navigator.clipboard.writeText(text).then(()=>{ toast.textContent='Resultados copiados.'; },fallback); }catch(err){ fallback(); }
+  }
+});
+
+document.querySelectorAll('input[name=e_fluido]').forEach(r=>r.addEventListener('change',()=>{
+  const esg=rv('e_fluido')==='esg', s=$('e_q_src');
+  if(s.value!=='manual') s.value=esg?'esg_max':'agua_dia';
+}));
+
+/* abas */
+function showTab(k){
+  document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===k)));
+  document.querySelectorAll('.panel').forEach(p=>{ p.hidden = p.id!=='p_'+k; });
+  try{ localStorage.setItem('calc_tab',k); }catch(e){}
+}
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
+let startTab='vaz';
+try{ const s=localStorage.getItem('calc_tab'); if(s&&$('p_'+s)) startTab=s; }catch(e){}
+const h=(location.hash||'').slice(1); if(h&&$('p_'+h)) startTab=h;
+
+renderRows();
+showTab(startTab);
+recalc();
+})();
+</script>
+<script>
+if('serviceWorker' in navigator){ window.addEventListener('load',()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); }); }
+</script>
+</body>
+</html>
